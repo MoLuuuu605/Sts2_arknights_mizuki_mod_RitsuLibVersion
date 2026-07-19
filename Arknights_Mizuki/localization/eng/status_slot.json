@@ -1,0 +1,61 @@
+{
+    "slot.revelation.name": "Revelation",
+    "slot.revelation.empty": "Revelations obtained during exploration will appear here.",
+
+    "slot.aberration.name": "Aberration",
+    "slot.aberration.empty": "Aberrations obtained during exploration will appear here.",
+
+    "slot.swarmcall.name": "Swarm Call",
+    "slot.swarmcall.empty": "Swarm calls obtained during exploration will appear here.",
+
+    "effect.ursus_roar.name": "Roar of Ursus",
+    "effect.ursus_roar.desc": "At the start of each combat, apply 2 Weak to all enemies.",
+
+    "effect.yan_erosion.name": "Erosion of Yan",
+    "effect.yan_erosion.desc": "Gain 1 Energy at the start of each turn.",
+
+    "effect.columbia_innovation.name": "Innovation of Columbia",
+    "effect.columbia_innovation.desc": "At the end of your next combat, gain an additional rare card reward.",
+
+    "effect.sami_fortitude.name": "Fortitude of Sami",
+    "effect.sami_fortitude.desc": "When you take unblocked damage, reduce the damage by 2.",
+
+    "effect.victoria_glory.name": "Glory of Victoria",
+    "effect.victoria_glory.desc": "When you take damage, 25% chance to cancel the damage.",
+
+    "effect.leithanien_elegance.name": "Elegance of Leithanien",
+    "effect.leithanien_elegance.desc": "At the start of each combat, gain 8 Plating.",
+
+    "effect.sargon_generosity.name": "Generosity of Sargon",
+    "effect.sargon_generosity.desc": "Upon obtaining, gain 2 random relics.",
+
+    "effect.hematopoietic_disorder.name": "Hematopoietic Disorder",
+    "effect.hematopoietic_disorder.desc": "When below 80% HP, lose 2 HP at the end of each combat.",
+
+    "effect.focus_disorder.name": "Focus Disorder",
+    "effect.focus_disorder.desc": "In the first turn of each combat, control is taken over by Vakuu.",
+
+    "effect.neurodegeneration.name": "Neurodegeneration",
+    "effect.neurodegeneration.desc": "In the first turn of each combat, gain Ringing.",
+
+    "effect.flesh_distortion.name": "Flesh Distortion",
+    "effect.flesh_distortion.desc": "Upon obtaining, lose 50% Max HP. Upon removal, restore the lost Max HP.",
+
+    "effect.echo_strife.name": "Echo: Strife",
+    "effect.echo_strife.desc": "In this act, all friendly and enemy units gain 1 Strength at the start of each turn.",
+
+    "effect.echo_modification.name": "Echo: Modification",
+    "effect.echo_modification.desc": "In this act, gain 25 Gold when entering a non-combat room. Lose all Gold gained from this effect when leaving the act.",
+
+    "effect.echo_wither.name": "Echo: Wither",
+    "effect.echo_wither.desc": "Gold drops from combat +100%. After entering a combat room, lose 2 HP.",
+
+    "effect.echo_supply.name": "Echo: Supply",
+    "effect.echo_supply.desc": "After combat, 30% chance to drop an additional card reward. At the start of each combat, apply 4 Plating to all enemies.",
+
+    "effect.echo_long_road.name": "Echo: Long Road",
+    "effect.echo_long_road.desc": "Gain 3 Max HP after each combat in this act, but damage taken +50%.",
+
+    "effect.echo_allme.name": "Echo: Collective Self",
+    "effect.echo_allme.desc": "At the start of each combat, every time you play 5 cards, damage 10 to all enemies.Every time you play 10 cards, gain 1 Energy."
+}

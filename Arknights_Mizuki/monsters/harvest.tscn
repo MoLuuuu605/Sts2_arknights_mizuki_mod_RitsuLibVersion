@@ -1,0 +1,48 @@
+[gd_scene load_steps=5 format=3 uid="uid://cxaq62mn51qdl"]
+
+[ext_resource type="SpineAtlasResource" uid="uid://cosub8tifvfs3" path="res://Arknights_Mizuki/monsters/harves/enemy_1151_dslntc.atlas" id="1_qx74e"]
+[ext_resource type="SpineSkeletonFileResource" uid="uid://cj2uiemx1wfu" path="res://Arknights_Mizuki/monsters/harves/enemy_1151_dslntc_424.skel" id="2_1pgj8"]
+[ext_resource type="Script" uid="uid://b82paatqubah1" path="res://Arknights_Mizuki/scenes/spine_visuals.gd" id="3_spine"]
+
+[sub_resource type="SpineSkeletonDataResource" id="SpineSkeletonDataResource_7b3sj"]
+atlas_res = ExtResource("1_qx74e")
+skeleton_file_res = ExtResource("2_1pgj8")
+
+[node name="Character" type="Node2D"]
+scale = Vector2(1.2, 1.2)
+
+[node name="Visuals" type="SpineSprite" parent="."]
+skeleton_data_res = SubResource("SpineSkeletonDataResource_7b3sj")
+preview_skin = "Default"
+preview_animation = "Idle"
+preview_frame = false
+preview_time = 0.0
+unique_name_in_owner = true
+position = Vector2(40, 0)
+scale = Vector2(0.2, 0.2)
+script = ExtResource("3_spine")
+attack_animation = "Skill_Attack"
+buff_animation = "Skill_Begin"
+idle_after_buff_animation = "Skill_Idle"
+
+[node name="Bounds" type="Control" parent="."]
+unique_name_in_owner = true
+mouse_filter = 2
+layout_mode = 3
+anchors_preset = 0
+offset_left = -39.166664
+offset_top = -106.666664
+offset_right = 120.833336
+offset_bottom = 13.333336
+
+[node name="IntentPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(49.166664, -41.666664)
+
+[node name="CenterPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(51.666664, -42.499996)
+
+[node name="TalkPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(44.166664, -42.5)

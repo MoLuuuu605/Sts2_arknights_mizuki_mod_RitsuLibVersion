@@ -1,0 +1,5 @@
+{
+  "ARKNIGHTS_MIZUKI_ENCHANTMENT_REVELATION_ENCHANTMENT.title": "啓示",
+  "ARKNIGHTS_MIZUKI_ENCHANTMENT_REVELATION_ENCHANTMENT.description": "プレイ時、ランダムに以下の効果を発動する：\nカードを[gold]{Cards}[/gold]枚引く\nHPを[gold]{Hp}[/gold]回復する\n対象に[gold]{SanityPower}[/gold]層の[blue]神経損傷[/blue]を与える\nランダムなレリックを1つ得る",
+  "ARKNIGHTS_MIZUKI_ENCHANTMENT_REVELATION_ENCHANTMENT.extraCardText": "ランダムな啓示を1つ得る。"
+}

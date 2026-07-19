@@ -1,0 +1,24 @@
+[gd_scene load_steps=6 format=3 uid="uid://pdy0teckf4i"]
+
+[ext_resource type="Script" uid="uid://b0uc38txt0drq" path="res://Arknights_Mizuki/scenes/TestCharacterMerchant.cs" id="1_da6le"]
+[ext_resource type="SpineAtlasResource" uid="uid://cwyoefm1bww6f" path="res://Arknights_Mizuki/images/character/build_char_437_mizuki.atlas" id="2_67bxs"]
+[ext_resource type="SpineSkeletonFileResource" uid="uid://nbsnuesubqxy" path="res://Arknights_Mizuki/images/character/build_char_437_mizuki_424.skel" id="3_ywkh3"]
+[ext_resource type="Script" uid="uid://dwmxjmr76h1lx" path="res://Arknights_Mizuki/scenes/merchant_idle.gd" id="4_gih1j"]
+
+[sub_resource type="SpineSkeletonDataResource" id="SpineSkeletonDataResource_60v20"]
+atlas_res = ExtResource("2_67bxs")
+skeleton_file_res = ExtResource("3_ywkh3")
+
+[node name="IroncladMerchant" type="Node2D"]
+script = ExtResource("1_da6le")
+
+[node name="SpineSprite" type="SpineSprite" parent="."]
+skeleton_data_res = SubResource("SpineSkeletonDataResource_60v20")
+preview_skin = "Default"
+preview_animation = "Relax"
+preview_frame = false
+preview_time = 0.0
+unique_name_in_owner = true
+position = Vector2(147.00003, -3)
+scale = Vector2(0.65, 0.65)
+script = ExtResource("4_gih1j")

@@ -1,0 +1,61 @@
+{
+    "slot.revelation.name": "启示",
+    "slot.revelation.empty": "在探索中获得的启示会显示在这里。每层开始时有概率获得。",
+
+    "slot.aberration.name": "排异反应",
+    "slot.aberration.empty": "在探索中获得的排异反应会显示在这里，每场战斗失去一定生命后有概率获得。",
+
+    "slot.swarmcall.name": "回响",
+    "slot.swarmcall.empty": "在探索中获得的回响会显示在这里，每层开始时有概率获得。",
+
+    "effect.ursus_roar.name": "乌萨斯的怒号",
+    "effect.ursus_roar.desc": "每场战斗开始时，给予所有敌人2层虚弱。",
+
+    "effect.yan_erosion.name": "大炎的沧桑",
+    "effect.yan_erosion.desc": "每回合获得1点费用。",
+
+    "effect.columbia_innovation.name": "哥伦比亚的创想",
+    "effect.columbia_innovation.desc": "下次战斗结束时额外获得1次稀有卡牌奖励。",
+
+    "effect.sami_fortitude.name": "萨米的坚韧",
+    "effect.sami_fortitude.desc": "所有敌人造成的伤害-2。",
+
+    "effect.victoria_glory.name": "维多利亚的荣耀",
+    "effect.victoria_glory.desc": "每次受到伤害时有25%概率免疫。",
+
+    "effect.leithanien_elegance.name": "莱塔尼亚的优雅",
+    "effect.leithanien_elegance.desc": "每场战斗开始时获得8层覆甲。",
+
+    "effect.sargon_generosity.name": "萨尔贡的慷慨",
+    "effect.sargon_generosity.desc": "获得时随机获得2个遗物。",
+
+    "effect.hematopoietic_disorder.name": "造血障碍",
+    "effect.hematopoietic_disorder.desc": "血量低于80%时，每场回合结束后失去1点生命。",
+
+    "effect.focus_disorder.name": "专注失调",
+    "effect.focus_disorder.desc": "每场战斗的第1个回合会被瓦库接管。",
+
+    "effect.neurodegeneration.name": "神经退行",
+    "effect.neurodegeneration.desc": "每场战斗的第1个回合只能打出1张牌。",
+
+    "effect.flesh_distortion.name": "血肉畸变",
+    "effect.flesh_distortion.desc": "获得时失去50%最大生命，失去时恢复等量最大生命。",
+
+    "effect.echo_strife.name": "回响：争斗",
+    "effect.echo_strife.desc": "本层中，回合开始时，所有单位获得1点力量。",
+
+    "effect.echo_modification.name": "回响：改造",
+    "effect.echo_modification.desc": "本层每次进入非战斗房间时获得25金币，离开本层时失去本层获得的金币。",
+
+    "effect.echo_wither.name": "回响：枯荣",
+    "effect.echo_wither.desc": "战斗掉落的金币+100%，进入战斗房间后失去2点生命。",
+
+    "effect.echo_supply.name": "回响：给养",
+    "effect.echo_supply.desc": "战斗后有30%概率额外掉落一组卡牌奖励。每场战斗开始时给予所有敌人4层覆甲。",
+
+    "effect.echo_long_road.name": "回响：途长",
+    "effect.echo_long_road.desc": "本层每场战斗后获得3点最大生命，但受到的伤害+50%。",
+
+    "effect.echo_allme.name": "回响：众我",
+    "effect.echo_allme.desc": "本层每场战斗中，你每打出5张牌，对所有敌人造成10点伤害，每打出10张牌，获得1点能量。"
+}

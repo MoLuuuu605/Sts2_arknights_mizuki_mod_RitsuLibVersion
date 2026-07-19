@@ -1,0 +1,51 @@
+[gd_scene load_steps=5 format=3 uid="uid://cyv8d7oq2tv0i"]
+
+[ext_resource type="SpineAtlasResource" uid="uid://v0h8wonioxbw" path="res://Arknights_Mizuki/images/monsters/izumikson/enemy_2041_syjely.atlas" id="1_hbq46"]
+[ext_resource type="SpineSkeletonFileResource" uid="uid://cqryo41l4xsnl" path="res://Arknights_Mizuki/images/monsters/izumikson/enemy_2041_syjely_424.skel" id="2_8qtdr"]
+[ext_resource type="Script" uid="uid://b82paatqubah1" path="res://Arknights_Mizuki/scenes/spine_visuals.gd" id="3_spine"]
+
+[sub_resource type="SpineSkeletonDataResource" id="SpineSkeletonDataResource_wqwq4"]
+atlas_res = ExtResource("1_hbq46")
+skeleton_file_res = ExtResource("2_8qtdr")
+
+[node name="SonOfIzumik" type="Node2D"]
+
+[node name="Visuals" type="SpineSprite" parent="."]
+skeleton_data_res = SubResource("SpineSkeletonDataResource_wqwq4")
+preview_skin = "Default"
+preview_animation = "-- Empty --"
+preview_frame = false
+preview_time = 0.0
+unique_name_in_owner = true
+position = Vector2(-2, -1)
+scale = Vector2(0.5, 0.5)
+script = ExtResource("3_spine")
+attack_animation = "Move"
+cast_animation = "Move"
+buff_animation = "Move"
+summon_animation = "Move"
+
+[node name="Bounds" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+offset_left = -54.0
+offset_top = -163.0
+offset_right = 54.0
+
+offset_bottom = 1.0
+[node name="IntentPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(-7, -157)
+
+[node name="CenterPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(0, -82)
+
+[node name="TalkPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(-5, -77)
+
+[node name="OrbPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(3, -78)

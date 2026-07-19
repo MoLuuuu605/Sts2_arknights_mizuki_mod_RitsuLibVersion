@@ -1,0 +1,48 @@
+[gd_scene load_steps=5 format=3 uid="uid://dths5ay7y32j"]
+
+[ext_resource type="SpineAtlasResource" uid="uid://d1h64frmet30a" path="res://Arknights_Mizuki/images/monsters/izumik/enemy_2042_syboss.atlas" id="1_oeuoh"]
+[ext_resource type="SpineSkeletonFileResource" uid="uid://cf7gl5xj5m7am" path="res://Arknights_Mizuki/images/monsters/izumik/enemy_2042_syboss_424.skel" id="2_4gc6x"]
+[ext_resource type="Script" uid="uid://b82paatqubah1" path="res://Arknights_Mizuki/scenes/spine_visuals.gd" id="3_spine"]
+
+[sub_resource type="SpineSkeletonDataResource" id="SpineSkeletonDataResource_81ywy"]
+atlas_res = ExtResource("1_oeuoh")
+skeleton_file_res = ExtResource("2_4gc6x")
+
+[node name="Izumik" type="Node2D"]
+
+[node name="Visuals" type="SpineSprite" parent="."]
+skeleton_data_res = SubResource("SpineSkeletonDataResource_81ywy")
+preview_skin = "Default"
+preview_animation = "Attack"
+preview_frame = false
+preview_time = 0.0
+unique_name_in_owner = true
+scale = Vector2(0.6, 0.6)
+script = ExtResource("3_spine")
+cast_animation = "Skill_1_Begin"
+summon_animation = "Skill_1_Begin"
+
+[node name="Bounds" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+offset_left = -302.0
+offset_top = -577.0
+offset_right = 295.0
+offset_bottom = -6.0
+
+[node name="IntentPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(-6, -544)
+
+[node name="CenterPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(-2, -343)
+
+[node name="TalkPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(-3, -535)
+
+[node name="OrbPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(4, -353)

@@ -1,0 +1,13 @@
+{
+    "local_sanity.description": "造成等量神经损伤",
+    "local_sanity.title": "损伤",
+
+    "ARKNIGHTS_MIZUKI_TOPBARBUTTON_REVELATION_SLOT.title": "启示",
+    "ARKNIGHTS_MIZUKI_TOPBARBUTTON_REVELATION_SLOT.description": "当前启示效果将在此显示。",
+
+    "ARKNIGHTS_MIZUKI_TOPBARBUTTON_ABERRATION_SLOT.title": "排异反应",
+    "ARKNIGHTS_MIZUKI_TOPBARBUTTON_ABERRATION_SLOT.description": "当前排异反应效果将在此显示。",
+
+    "ARKNIGHTS_MIZUKI_TOPBARBUTTON_SWARM_CALL_SLOT.title": "回响",
+    "ARKNIGHTS_MIZUKI_TOPBARBUTTON_SWARM_CALL_SLOT.description": "当前回响效果将在此显示。"
+}

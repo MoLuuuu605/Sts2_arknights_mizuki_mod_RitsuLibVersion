@@ -1,0 +1,57 @@
+using Arknights_Mizuki.Scripts.Pools;
+using Arknights_Mizuki.Scripts.Powers;
+using BaseLib.Abstracts;
+using BaseLib.Utils;
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.HoverTips;
+using MegaCrit.Sts2.Core.Localization.DynamicVars;
+
+namespace Arknights_Mizuki.Scripts.Cards;
+
+[Pool(typeof(MzkCardPool))]
+public sealed class DeepSeaCommand : CustomCardModel
+{
+    private const int energyCost = 1;
+    private const CardType type = CardType.Skill;
+    private const CardRarity rarity = CardRarity.Uncommon;
+    private const TargetType targetType = TargetType.Self;
+    private const bool shouldShowInCardLibrary = true;
+
+    protected override IEnumerable<DynamicVar> CanonicalVars => (IEnumerable<DynamicVar>)(object)new DynamicVar[2]
+    {
+        (DynamicVar)new PowerVar<SeabornizationPower>(5m),
+        new CardsVar(1)
+    };
+
+    protected override IEnumerable<IHoverTip> ExtraHoverTips => (IEnumerable<IHoverTip>)(object)new IHoverTip[1]
+    {
+        HoverTipFactory.FromPower<SeabornizationPower>()
+    };
+
+    public override string PortraitPath => "res://Arknights_Mizuki/images/cards/DeepSeaCommand.png";
+
+    public DeepSeaCommand() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary)
+    {
+    }
+
+    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    {
+        var minions = Owner.PlayerCombatState?.Pets.Where(pet => pet is { IsAlive: true, IsPet: true }).ToList();
+        if (minions == null || minions.Count == 0)
+            return;
+
+        foreach (var minion in minions)
+            await PowerCmd.Apply<SeabornizationPower>(choiceContext, minion, DynamicVars["SeabornizationPower"].BaseValue, minion, this);
+
+        if (minions.Count >= 2)
+            await CardPileCmd.Draw(choiceContext, 1, Owner);
+    }
+
+    protected override void OnUpgrade()
+    {
+        DynamicVars["SeabornizationPower"].UpgradeValueBy(2m);
+        DynamicVars.Cards.UpgradeValueBy(1);
+    }
+}

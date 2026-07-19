@@ -1,0 +1,17 @@
+{
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.aromaPrinciple": "[sine][blue]...Seaborn... tasty.[/blue][/sine]",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.banter.alive.endTurnPing": "...",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.banter.dead.endTurnPing": "...",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.cardsModifierDescription": "Mizuki's cards can now appear in rewards and shops.",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.cardsModifierTitle": "Mizuki Cards",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.description": "A shared creation of Seaborn and humanity.\nOperator [blue]Mizuki[/blue] has come to conquer the Spire to soothe the wrath of the We Many.",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.eventDeathPrevention": "I still have to keep waiting...",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.goldMonologue": "[sine]These coins... may still be useful...[/sine]",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.possessiveAdjective": "his",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.pronounObject": "him",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.pronounPossessive": "his",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.pronounSubject": "he",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.title": "Mizuki",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.titleObject": "Mizuki",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.unlockText": "Play a run with [pink]{Prerequisite}[/pink] to unlock this character."
+}

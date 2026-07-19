@@ -1,0 +1,15 @@
+C:\Users\liuyuxuan\Documents\arknights-mizuki\.inspect\bin\Debug\net10.0\InspectBaseLib.exe
+C:\Users\liuyuxuan\Documents\arknights-mizuki\.inspect\bin\Debug\net10.0\InspectBaseLib.deps.json
+C:\Users\liuyuxuan\Documents\arknights-mizuki\.inspect\bin\Debug\net10.0\InspectBaseLib.runtimeconfig.json
+C:\Users\liuyuxuan\Documents\arknights-mizuki\.inspect\bin\Debug\net10.0\InspectBaseLib.dll
+C:\Users\liuyuxuan\Documents\arknights-mizuki\.inspect\bin\Debug\net10.0\InspectBaseLib.pdb
+C:\Users\liuyuxuan\Documents\arknights-mizuki\.inspect\obj\Debug\net10.0\InspectBaseLib.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\liuyuxuan\Documents\arknights-mizuki\.inspect\obj\Debug\net10.0\InspectBaseLib.AssemblyInfoInputs.cache
+C:\Users\liuyuxuan\Documents\arknights-mizuki\.inspect\obj\Debug\net10.0\InspectBaseLib.AssemblyInfo.cs
+C:\Users\liuyuxuan\Documents\arknights-mizuki\.inspect\obj\Debug\net10.0\InspectBaseLib.csproj.CoreCompileInputs.cache
+C:\Users\liuyuxuan\Documents\arknights-mizuki\.inspect\obj\Debug\net10.0\InspectBaseLib.sourcelink.json
+C:\Users\liuyuxuan\Documents\arknights-mizuki\.inspect\obj\Debug\net10.0\InspectBaseLib.dll
+C:\Users\liuyuxuan\Documents\arknights-mizuki\.inspect\obj\Debug\net10.0\refint\InspectBaseLib.dll
+C:\Users\liuyuxuan\Documents\arknights-mizuki\.inspect\obj\Debug\net10.0\InspectBaseLib.pdb
+C:\Users\liuyuxuan\Documents\arknights-mizuki\.inspect\obj\Debug\net10.0\InspectBaseLib.genruntimeconfig.cache
+C:\Users\liuyuxuan\Documents\arknights-mizuki\.inspect\obj\Debug\net10.0\ref\InspectBaseLib.dll

@@ -1,0 +1,42 @@
+[gd_scene load_steps=5 format=3 uid="uid://hun6mqqhnlgk"]
+
+[ext_resource type="SpineAtlasResource" uid="uid://5idol044vufc" path="res://Arknights_Mizuki/images/monsters/flwitch/enemy_2007_flwitch.atlas" id="1_h8xss"]
+[ext_resource type="SpineSkeletonFileResource" uid="uid://m4f4d6otjmvv" path="res://Arknights_Mizuki/images/monsters/flwitch/enemy_2007_flwitch_424.skel" id="2_h8b8p"]
+[ext_resource type="Script" uid="uid://b82paatqubah1" path="res://Arknights_Mizuki/scenes/spine_visuals.gd" id="3_spine"]
+
+[sub_resource type="SpineSkeletonDataResource" id="SpineSkeletonDataResource_36jky"]
+atlas_res = ExtResource("1_h8xss")
+skeleton_file_res = ExtResource("2_h8b8p")
+
+[node name="ColdDisaster" type="Node2D"]
+
+[node name="Visuals" type="SpineSprite" parent="."]
+skeleton_data_res = SubResource("SpineSkeletonDataResource_36jky")
+preview_skin = "Default"
+preview_animation = "Idle"
+preview_frame = false
+preview_time = 0.0
+unique_name_in_owner = true
+scale = Vector2(-0.6, 0.6)
+script = ExtResource("3_spine")
+
+[node name="Bounds" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+offset_left = -131.0
+offset_top = -372.0
+offset_right = 129.0
+offset_bottom = 18.186035
+
+[node name="IntentPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(-1, -356)
+
+[node name="CenterPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(2, -190)
+
+[node name="TalkPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(-116, -256)

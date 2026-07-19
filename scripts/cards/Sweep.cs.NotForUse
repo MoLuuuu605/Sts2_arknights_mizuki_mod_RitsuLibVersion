@@ -1,0 +1,60 @@
+﻿using BaseLib.Abstracts;
+using BaseLib.Utils;
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Localization.DynamicVars;
+using MegaCrit.Sts2.Core.ValueProps;
+using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.HoverTips;
+
+using Arknights_Mizuki.Scripts.Pools;
+using MegaCrit.Sts2.Core.Models.Cards;
+
+namespace Arknights_Mizuki.Scripts.Cards;
+
+[Pool(typeof(MzkCardPool))]
+public class Sweep : CustomCardModel
+{
+    // 鍩虹鑰楄兘
+    private const int energyCost = 1;
+    // 鍗＄墝绫诲瀷
+    private const CardType type = CardType.Attack;
+
+    private const CardRarity rarity = CardRarity.Common;
+
+    private const TargetType targetType = TargetType.AllEnemies;
+
+    private const bool shouldShowInCardLibrary = true;
+    protected override IEnumerable<DynamicVar> CanonicalVars => (IEnumerable<DynamicVar>)(object)new DynamicVar[1]
+	{
+		(DynamicVar)new DamageVar(9m, (ValueProp)8)
+    };
+    protected override IEnumerable<IHoverTip> ExtraHoverTips => (IEnumerable<IHoverTip>)(object)new IHoverTip[1]
+	{
+		HoverTipFactory.FromCard<Dazed>()
+	};
+
+    public override string PortraitPath => $"res://Arknights_Mizuki/images/cards/Sweep.png";
+
+    public Sweep() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary)
+    {
+    }
+
+    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    {
+        await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
+            .FromCard(this,cardPlay)
+            .TargetingAllOpponents(((CardModel)this).CombatState)
+            .Execute(choiceContext);
+        var opponents = ((CardModel)this).CombatState.GetOpponentsOf(Owner.Creature);
+        CardCmd.PreviewCardPileAdd(await CardPileCmd.AddGeneratedCardToCombat(CombatState.CreateCard<Dazed>(Owner),PileType.Discard,Owner,CardPilePosition.Bottom));
+    }
+
+    protected override void OnUpgrade()
+    {
+		((DynamicVar)((CardModel)this).DynamicVars.Damage).UpgradeValueBy(3m);
+    }
+}
+
+

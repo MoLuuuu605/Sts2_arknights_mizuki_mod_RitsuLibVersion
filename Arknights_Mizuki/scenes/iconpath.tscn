@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://dgtaq8gt6p25j"]
+
+[ext_resource type="Texture2D" uid="uid://dmpbxbedh78ig" path="res://icon.svg" id="1_arar7"]
+
+[node name="TextureRect" type="TextureRect"]
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 46.0
+offset_bottom = 48.0
+texture = ExtResource("1_arar7")
+expand_mode = 1

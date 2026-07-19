@@ -1,0 +1,17 @@
+{
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.aromaPrinciple": "[sine][blue]……海嗣……好吃[/blue][/sine]",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.banter.alive.endTurnPing": "……",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.banter.dead.endTurnPing": "……",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.cardsModifierDescription": "水月的卡牌现在会出现在奖励和商店中。",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.cardsModifierTitle": "水月卡牌",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.description": "海嗣与人类的共同造物。\n干员[blue]水月[/blue],为了平复大群的愤怒，前来征服高塔。",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.eventDeathPrevention": "我还得继续等下去……",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.goldMonologue": "[sine]这些金币……也许能派上用场……[/sine]",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.possessiveAdjective": "他的",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.pronounObject": "他",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.pronounPossessive": "他的",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.pronounSubject": "他",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.title": "水月",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.titleObject": "水月",
+  "ARKNIGHTS_MIZUKI_CHARACTER_MIZUKI.unlockText": "用[pink]{Prerequisite}[/pink]进行一局游戏来解锁这个角色。"
+}

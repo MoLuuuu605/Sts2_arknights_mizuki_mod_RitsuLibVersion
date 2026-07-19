@@ -1,0 +1,5 @@
+{
+  "ARKNIGHTS_MIZUKI_ENCHANTMENT_REVELATION_ENCHANTMENT.title": "启示",
+  "ARKNIGHTS_MIZUKI_ENCHANTMENT_REVELATION_ENCHANTMENT.description": "第一次打出时随机触发以下效果：\n抽[gold]{Cards}[/gold]张牌。\n回复[gold]{Hp}[/gold]生命。\n随机给予一名敌人[gold]{SanityPower}[/gold]层[blue]损伤[/blue]。\n随机获得一个遗物。",
+  "ARKNIGHTS_MIZUKI_ENCHANTMENT_REVELATION_ENCHANTMENT.extraCardText": "随机获得一个启示。"
+}

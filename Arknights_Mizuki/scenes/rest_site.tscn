@@ -1,0 +1,62 @@
+[gd_scene load_steps=7 format=3 uid="uid://o6meyqih1ymp"]
+
+[ext_resource type="Script" uid="uid://b17ps3ul4spgv" path="res://Arknights_Mizuki/scenes/RestSite.cs" id="1_svqvd"]
+[ext_resource type="SpineAtlasResource" uid="uid://cwyoefm1bww6f" path="res://Arknights_Mizuki/images/character/build_char_437_mizuki.atlas" id="2_oqa2h"]
+[ext_resource type="SpineSkeletonFileResource" uid="uid://nbsnuesubqxy" path="res://Arknights_Mizuki/images/character/build_char_437_mizuki_424.skel" id="3_84kns"]
+[ext_resource type="Script" uid="uid://b8yvqokhdibri" path="res://Arknights_Mizuki/scenes/SelectionReticle.cs" id="3_ayivr"]
+[ext_resource type="Script" path="res://Arknights_Mizuki/scenes/rest_site_sit.gd" id="4_r4f3v"]
+
+[sub_resource type="SpineSkeletonDataResource" id="SpineSkeletonDataResource_vl4n8"]
+atlas_res = ExtResource("2_oqa2h")
+skeleton_file_res = ExtResource("3_84kns")
+
+[node name="SakayoriIrohaRestSite" type="Node2D"]
+script = ExtResource("1_svqvd")
+
+[node name="SpineSprite" type="SpineSprite" parent="."]
+skeleton_data_res = SubResource("SpineSkeletonDataResource_vl4n8")
+preview_skin = "Default"
+preview_animation = "Sit"
+preview_frame = false
+preview_time = 0.0
+position = Vector2(147.00003, -3)
+script = ExtResource("4_r4f3v")
+
+[node name="ControlRoot" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="SelectionReticle" type="Control" parent="ControlRoot"]
+unique_name_in_owner = true
+anchors_preset = 0
+offset_left = -239.0
+offset_top = -428.0
+offset_right = 267.0
+offset_bottom = 1.0
+script = ExtResource("3_ayivr")
+
+[node name="Hitbox" type="Control" parent="ControlRoot"]
+unique_name_in_owner = true
+anchors_preset = 0
+offset_left = -187.0
+offset_top = -411.0
+offset_right = 240.0
+offset_bottom = -6.0
+
+[node name="ThoughtBubbleRight" type="Control" parent="ControlRoot"]
+unique_name_in_owner = true
+anchors_preset = 0
+offset_left = 139.0
+offset_top = -246.0
+offset_right = 139.0
+offset_bottom = -246.0
+
+[node name="ThoughtBubbleLeft" type="Control" parent="ControlRoot"]
+unique_name_in_owner = true
+anchors_preset = 0
+offset_left = -117.0
+offset_top = -214.0
+offset_right = -117.0
+offset_bottom = -214.0

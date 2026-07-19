@@ -1,0 +1,48 @@
+[gd_scene load_steps=5 format=3 uid="uid://80uoltapevbn"]
+
+[ext_resource type="SpineAtlasResource" uid="uid://dywvuje0udaqi" path="res://Arknights_Mizuki/monsters/float/enemy_2025_syufo.atlas" id="1_7phho"]
+[ext_resource type="SpineSkeletonFileResource" uid="uid://d11qqvp4fu0m7" path="res://Arknights_Mizuki/monsters/float/enemy_2025_syufo_424.skel" id="2_k3juj"]
+[ext_resource type="Script" uid="uid://b82paatqubah1" path="res://Arknights_Mizuki/scenes/spine_visuals.gd" id="3_spine"]
+
+[sub_resource type="SpineSkeletonDataResource" id="SpineSkeletonDataResource_k10hk"]
+atlas_res = ExtResource("1_7phho")
+skeleton_file_res = ExtResource("2_k3juj")
+
+[node name="Character" type="Node2D"]
+scale = Vector2(1.2, 1.2)
+
+[node name="Visuals" type="SpineSprite" parent="."]
+skeleton_data_res = SubResource("SpineSkeletonDataResource_k10hk")
+preview_skin = "Default"
+preview_animation = "Die_01"
+preview_frame = false
+preview_time = 0.0
+unique_name_in_owner = true
+position = Vector2(40, 0)
+scale = Vector2(0.2, 0.2)
+script = ExtResource("3_spine")
+idle_animation = "Idle_01"
+attack_animation = "Attack_01"
+dead_animation = "Die_01"
+
+[node name="Bounds" type="Control" parent="."]
+unique_name_in_owner = true
+mouse_filter = 2
+layout_mode = 3
+anchors_preset = 0
+offset_left = -2.4999998
+offset_top = -66.666664
+offset_right = 84.5
+offset_bottom = 3.3333359
+
+[node name="IntentPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(38.333332, -14.166664)
+
+[node name="CenterPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(37.5, -14.166664)
+
+[node name="TalkPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(35.833332, -14.999998)

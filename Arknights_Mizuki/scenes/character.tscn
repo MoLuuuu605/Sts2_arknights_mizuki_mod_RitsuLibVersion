@@ -1,0 +1,41 @@
+[gd_scene load_steps=5 format=3 uid="uid://cpe8k3d3kxayh"]
+
+[ext_resource type="SpineAtlasResource" uid="uid://5uq2r7dix5yo" path="res://Arknights_Mizuki/images/character/char_437_mizuki.atlas" id="1_2gwqm"]
+[ext_resource type="SpineSkeletonFileResource" uid="uid://devt5qt3iahoa" path="res://Arknights_Mizuki/images/character/char_437_mizuki_424.skel" id="2_3plfo"]
+[ext_resource type="Script" uid="uid://b82paatqubah1" path="res://Arknights_Mizuki/scenes/spine_visuals.gd" id="3_3plfo"]
+
+[sub_resource type="SpineSkeletonDataResource" id="SpineSkeletonDataResource_dfgbv"]
+atlas_res = ExtResource("1_2gwqm")
+skeleton_file_res = ExtResource("2_3plfo")
+
+[node name="Character" type="Node2D"]
+
+[node name="Visuals" type="SpineSprite" parent="."]
+skeleton_data_res = SubResource("SpineSkeletonDataResource_dfgbv")
+preview_skin = "Default"
+preview_animation = "Skill_1"
+preview_frame = false
+preview_time = 0.0
+unique_name_in_owner = true
+position = Vector2(105, 1)
+scale = Vector2(0.65, 0.65)
+script = ExtResource("3_3plfo")
+attack_startup_speed = 2.0
+attack_startup_duration = 0.2
+
+[node name="Bounds" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+offset_left = 2.0
+offset_top = -263.0
+offset_right = 206.0
+offset_bottom = 10.0
+
+[node name="IntentPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(103, -168)
+
+[node name="CenterPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(97, -180)

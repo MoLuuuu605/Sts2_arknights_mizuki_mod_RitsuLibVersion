@@ -1,0 +1,212 @@
+[gd_scene load_steps=2 format=3 uid="uid://chhbjak2l7my0"]
+
+[ext_resource type="VideoStream" uid="uid://dymulpphb6fig" path="res://Arknights_Mizuki/scenes/bg.ogv" id="2_xp3ma"]
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="VideoStreamPlayer" type="VideoStreamPlayer" parent="."]
+layout_mode = 0
+offset_left = 171.0
+offset_top = -123.0
+offset_right = 2731.0
+offset_bottom = 1143.0
+stream = ExtResource("2_xp3ma")
+autoplay = true
+loop = true
+
+[node name="CPUParticles2D" type="CPUParticles2D" parent="."]
+position = Vector2(179, 13)
+rotation = 0.006160957
+amount = 15
+lifetime = 4.13
+preprocess = 3.0
+randomness = 0.14
+direction = Vector2(0, -0.93)
+spread = 77.94
+gravity = Vector2(96.81, 98.705)
+initial_velocity_max = 118.04
+angular_velocity_min = 3.55
+angular_velocity_max = 3.55
+linear_accel_min = -1.45
+linear_accel_max = 6.3
+radial_accel_max = 15.0
+tangential_accel_min = 0.25
+tangential_accel_max = 5.85
+angle_min = -32.2
+angle_max = 220.8
+scale_amount_min = 5.0
+scale_amount_max = 11.63
+color = Color(0.12156863, 0.28235295, 1, 1)
+
+[node name="CPUParticles2D2" type="CPUParticles2D" parent="."]
+position = Vector2(452, -12)
+amount = 15
+lifetime = 4.13
+preprocess = 3.0
+randomness = 0.14
+direction = Vector2(0, -0.93)
+spread = 124.79
+gravity = Vector2(80.155, 128.54)
+initial_velocity_min = 2.0
+initial_velocity_max = 208.25
+angular_velocity_min = 3.55
+angular_velocity_max = 3.55
+linear_accel_min = -1.45
+linear_accel_max = 6.3
+radial_accel_max = 15.0
+tangential_accel_min = 0.25
+tangential_accel_max = 5.85
+angle_min = -32.2
+angle_max = 220.8
+scale_amount_min = 5.0
+scale_amount_max = 11.63
+color = Color(0.48444223, 0.51138335, 0.81418854, 1)
+
+[node name="CPUParticles2D3" type="CPUParticles2D" parent="."]
+position = Vector2(595, -5)
+amount = 5
+lifetime = 4.13
+preprocess = 3.0
+randomness = 0.14
+direction = Vector2(0, -0.93)
+spread = 124.79
+gravity = Vector2(100, 100)
+initial_velocity_min = 2.0
+initial_velocity_max = 6.0
+angular_velocity_min = 3.55
+angular_velocity_max = 3.55
+linear_accel_min = -1.45
+linear_accel_max = 6.3
+radial_accel_max = 15.0
+tangential_accel_min = 0.25
+tangential_accel_max = 5.85
+angle_min = -32.2
+angle_max = 220.8
+scale_amount_min = 5.0
+scale_amount_max = 11.63
+color = Color(0.12156863, 0.28235295, 1, 1)
+
+[node name="CPUParticles2D4" type="CPUParticles2D" parent="."]
+position = Vector2(308, 2)
+amount = 5
+lifetime = 4.13
+preprocess = 3.0
+randomness = 0.14
+direction = Vector2(0, -0.93)
+spread = 124.79
+gravity = Vector2(100, 100)
+initial_velocity_min = 2.0
+initial_velocity_max = 6.0
+angular_velocity_min = 3.55
+angular_velocity_max = 3.55
+linear_accel_min = -1.45
+linear_accel_max = 6.3
+radial_accel_max = 15.0
+tangential_accel_min = 0.25
+tangential_accel_max = 5.85
+angle_min = -32.2
+angle_max = 220.8
+scale_amount_min = 5.0
+scale_amount_max = 11.63
+color = Color(0.29324856, 0.53877914, 0.82475835, 1)
+
+[node name="CPUParticles2D" type="CPUParticles2D" parent="CPUParticles2D4"]
+position = Vector2(680, 5)
+rotation = 0.006160957
+amount = 19
+lifetime = 4.13
+preprocess = 3.0
+randomness = 0.14
+direction = Vector2(0, -0.93)
+spread = 124.79
+gravity = Vector2(100, 100)
+initial_velocity_min = 2.0
+initial_velocity_max = 163.3
+angular_velocity_min = 3.55
+angular_velocity_max = 3.55
+linear_accel_min = -1.45
+linear_accel_max = 6.3
+radial_accel_max = 15.0
+tangential_accel_min = 0.25
+tangential_accel_max = 5.85
+angle_min = -32.2
+angle_max = 220.8
+scale_amount_min = 5.0
+scale_amount_max = 11.63
+color = Color(0.16205761, 0.43208382, 0.6119563, 1)
+
+[node name="CPUParticles2D2" type="CPUParticles2D" parent="CPUParticles2D4"]
+position = Vector2(953, -20)
+amount = 15
+lifetime = 4.13
+preprocess = 3.2
+randomness = 0.14
+direction = Vector2(0, -0.93)
+spread = 124.79
+gravity = Vector2(80.155, 128.54)
+initial_velocity_min = 2.0
+initial_velocity_max = 6.0
+angular_velocity_min = 3.55
+angular_velocity_max = 3.55
+linear_accel_min = -1.45
+linear_accel_max = 6.3
+radial_accel_max = 15.0
+tangential_accel_min = 0.25
+tangential_accel_max = 5.85
+angle_min = -32.2
+angle_max = 220.8
+scale_amount_min = 5.0
+scale_amount_max = 11.63
+color = Color(0.39421728, 0.30949187, 0.78730565, 1)
+
+[node name="CPUParticles2D3" type="CPUParticles2D" parent="CPUParticles2D4"]
+position = Vector2(1096, -13)
+amount = 5
+lifetime = 4.13
+preprocess = 3.0
+randomness = 0.14
+direction = Vector2(0, -0.93)
+spread = 124.79
+gravity = Vector2(100, 100)
+initial_velocity_min = 2.0
+initial_velocity_max = 6.0
+angular_velocity_min = 3.55
+angular_velocity_max = 3.55
+linear_accel_min = -1.45
+linear_accel_max = 6.3
+radial_accel_max = 15.0
+tangential_accel_min = 0.25
+tangential_accel_max = 5.85
+angle_min = -32.2
+angle_max = 220.8
+scale_amount_min = 5.0
+scale_amount_max = 11.63
+color = Color(0.12156863, 0.28235295, 1, 1)
+
+[node name="CPUParticles2D4" type="CPUParticles2D" parent="CPUParticles2D4"]
+position = Vector2(809, -6)
+amount = 5
+lifetime = 4.13
+preprocess = 3.0
+randomness = 0.14
+direction = Vector2(0, -0.93)
+spread = 124.79
+gravity = Vector2(100, 100)
+initial_velocity_min = 2.0
+initial_velocity_max = 6.0
+angular_velocity_min = 3.55
+angular_velocity_max = 3.55
+linear_accel_min = -1.45
+linear_accel_max = 6.3
+radial_accel_max = 15.0
+tangential_accel_min = 0.25
+tangential_accel_max = 5.85
+angle_min = -32.2
+angle_max = 220.8
+scale_amount_min = 5.0
+scale_amount_max = 11.63
+color = Color(0.12156863, 0.28235295, 1, 1)

@@ -1,0 +1,90 @@
+using Arknights_Mizuki.Scripts.Pools;
+using Arknights_Mizuki.Scripts.Powers;
+using BaseLib.Abstracts;
+using BaseLib.Utils;
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.HoverTips;
+using MegaCrit.Sts2.Core.Localization.DynamicVars;
+using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Powers;
+
+namespace Arknights_Mizuki.Scripts.Cards;
+
+[Pool(typeof(MzkCardPool))]
+public sealed class ThrowKid : CustomCardModel
+{
+    private const int energyCost = 1;
+    private const CardType type = CardType.Skill;
+    private const CardRarity rarity = CardRarity.Rare;
+    private const TargetType targetType = TargetType.Self;
+    private const bool shouldShowInCardLibrary = true;
+
+    protected override IEnumerable<DynamicVar> CanonicalVars => (IEnumerable<DynamicVar>)(object)new DynamicVar[4]
+    {
+        (DynamicVar)new PowerVar<WeakPower>(1m),
+        (DynamicVar)new PowerVar<VulnerablePower>(1m),
+        (DynamicVar)new PowerVar<SanityPower>(3m),
+        (DynamicVar)new CardsVar(5)
+    };
+
+    protected override IEnumerable<IHoverTip> ExtraHoverTips => (IEnumerable<IHoverTip>)(object)new IHoverTip[4]
+    {
+        HoverTipFactory.FromPower<WeakPower>(),
+        HoverTipFactory.FromPower<VulnerablePower>(),
+        HoverTipFactory.FromPower<SanityPower>(),
+HoverTipFactory.FromPower<SanityBurstDescriptionPower>()
+    };
+
+    public override IEnumerable<CardKeyword> CanonicalKeywords => new CardKeyword[]
+    {
+        CardKeyword.Exhaust
+    };
+
+    public override string PortraitPath => "res://Arknights_Mizuki/images/cards/ThrowKid.png";
+
+    public ThrowKid() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary)
+    {
+    }
+
+    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    {
+        var opponents = CombatState.GetOpponentsOf(Owner.Creature)
+            .Where(opponent => opponent.IsAlive)
+            .ToList();
+
+        foreach (var opponent in opponents)
+        {
+            await PowerCmd.Apply<WeakPower>(choiceContext, opponent, DynamicVars["WeakPower"].BaseValue, Owner.Creature, this, false);
+            await PowerCmd.Apply<VulnerablePower>(choiceContext, opponent, DynamicVars["VulnerablePower"].BaseValue, Owner.Creature, this, false);
+            await PowerCmd.Apply<SanityPower>(choiceContext, opponent, DynamicVars["SanityPower"].BaseValue, Owner.Creature, this, false);
+        }
+
+        CardPile drawPile = PileType.Draw.GetPile(Owner);
+        if (drawPile.Cards.Count < DynamicVars.Cards.IntValue)
+            return;
+
+        List<CardModel> bottomCards = drawPile.Cards
+            .Skip(Math.Max(0, drawPile.Cards.Count - DynamicVars.Cards.IntValue))
+            .ToList();
+
+        foreach (CardModel card in bottomCards)
+        {
+            await CardCmd.Exhaust(choiceContext, card);
+        }
+
+        CardModel copy = CombatState.CloneCard(this);
+        if (((CardModel)this).IsUpgraded && copy.IsUpgradable)
+            CardCmd.Upgrade(copy);
+
+        CardCmd.PreviewCardPileAdd(await CardPileCmd.Add(copy, PileType.Draw, CardPilePosition.Top));
+    }
+
+    protected override void OnUpgrade()
+    {
+        DynamicVars["WeakPower"].UpgradeValueBy(1m);
+        DynamicVars["VulnerablePower"].UpgradeValueBy(1m);
+        DynamicVars["SanityPower"].UpgradeValueBy(1m);
+    }
+}

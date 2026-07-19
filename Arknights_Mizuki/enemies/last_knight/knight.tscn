@@ -1,0 +1,42 @@
+[gd_scene load_steps=5 format=3 uid="uid://bst1jxqptrelu"]
+
+[ext_resource type="SpineAtlasResource" uid="uid://ba3mip57jwe2j" path="res://Arknights_Mizuki/images/monsters/knight/enemy_2038_sydonq.atlas" id="1_lxj1u"]
+[ext_resource type="SpineSkeletonFileResource" uid="uid://cy03i4u1sytxk" path="res://Arknights_Mizuki/images/monsters/knight/enemy_2038_sydonq_424.skel" id="2_7b32e"]
+[ext_resource type="Script" uid="uid://b82paatqubah1" path="res://Arknights_Mizuki/scenes/spine_visuals.gd" id="3_spine"]
+
+[sub_resource type="SpineSkeletonDataResource" id="SpineSkeletonDataResource_nw0kq"]
+atlas_res = ExtResource("1_lxj1u")
+skeleton_file_res = ExtResource("2_7b32e")
+
+[node name="Character" type="Node2D"]
+
+[node name="Visuals" type="SpineSprite" parent="."]
+skeleton_data_res = SubResource("SpineSkeletonDataResource_nw0kq")
+preview_skin = "Default"
+preview_animation = "Idle"
+preview_frame = false
+preview_time = 0.0
+unique_name_in_owner = true
+position = Vector2(-2, -11)
+scale = Vector2(-0.6, 0.6)
+script = ExtResource("3_spine")
+cast_animation = "Skill_1_Begin"
+buff_animation = "Skill_1_Begin"
+summon_animation = "Skill_1_Begin"
+
+[node name="Bounds" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+offset_left = -235.0
+offset_top = -390.0
+offset_right = 235.0
+offset_bottom = 1.0
+
+[node name="IntentPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(10, -350)
+
+[node name="CenterPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(2, -167)
