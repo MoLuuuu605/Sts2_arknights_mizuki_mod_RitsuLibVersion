@@ -422,16 +422,39 @@ public static class MinionActionClickFallbackPatch
 public static class MinionActionIconFallbackPatch
 {
     private const string Module = "[MinionActionIconFallback]";
+    private const int MaxModelReadyAttempts = 4;
 
     [HarmonyPostfix]
     private static void Postfix(NPower __instance)
     {
-        if (__instance.Model is not ActionModel actionPower ||
+        TryConnectWhenModelReady(__instance, 0);
+    }
+
+    private static void TryConnectWhenModelReady(NPower powerNode, int attempt)
+    {
+        if (!GodotObject.IsInstanceValid(powerNode))
+            return;
+
+        ActionModel? actionPower;
+        try
+        {
+            actionPower = powerNode.Model as ActionModel;
+        }
+        catch (InvalidOperationException)
+        {
+            if (attempt < MaxModelReadyAttempts)
+            {
+                Callable.From(() => TryConnectWhenModelReady(powerNode, attempt + 1)).CallDeferred();
+            }
+            return;
+        }
+
+        if (actionPower == null ||
             !MinionActionClickFallbackPatch.IsSupportedAction(actionPower))
             return;
 
-        __instance.Connect(Control.SignalName.GuiInput,
-            Callable.From<InputEvent>(inputEvent => OnPowerGuiInput(__instance, inputEvent)));
+        powerNode.Connect(Control.SignalName.GuiInput,
+            Callable.From<InputEvent>(inputEvent => OnPowerGuiInput(powerNode, inputEvent)));
         Entry.Logger.Info($"{Module} connected action={MinionActionClickFallbackPatch.DescribeAction(actionPower)}");
     }
 

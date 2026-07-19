@@ -29,6 +29,7 @@ public static class Entry
         var assembly = Assembly.GetExecutingAssembly();
         RitsuLibFramework.EnsureGodotScriptsRegistered(assembly, Logger);
         ModTypeDiscoveryHub.RegisterModAssembly(ModId, assembly);
+        StatusSlotRunData.Register();
         StatusSlotSettings.Register();
         ArknightsTelemetry.Register(ModId);
         ModAssetPreloader.PreloadCombatAssets();

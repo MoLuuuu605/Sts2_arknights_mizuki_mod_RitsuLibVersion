@@ -1,4 +1,8 @@
 {
   "ARKNIGHTS_MIZUKI_ENCOUNTER_KNIGHT_BOSS_ENCOUNTER.title": "The Last Knight",
-  "ARKNIGHTS_MIZUKI_ENCOUNTER_KNIGHT_BOSS_ENCOUNTER.loss": "{character} fell beneath the cold tide of [gold]{encounter}[/gold]."
+  "ARKNIGHTS_MIZUKI_ENCOUNTER_KNIGHT_BOSS_ENCOUNTER.loss": "{character} fell to the cold tide of [gold]{encounter}[/gold].",
+  "ARKNIGHTS_MIZUKI_ENCOUNTER_SINGULARITY_BOSS_ENCOUNTER.title": "Izumik, Source of Ecology",
+  "ARKNIGHTS_MIZUKI_ENCOUNTER_SINGULARITY_BOSS_ENCOUNTER.description": "{character} dissolved beneath [gold]themself[/gold].",
+  "ARKNIGHTS_MIZUKI_ENCOUNTER_SINGULARITY_ELITE_ENCOUNTER.title": "Cold Disaster",
+  "ARKNIGHTS_MIZUKI_ENCOUNTER_SINGULARITY_ELITE_ENCOUNTER.description": "{character} met the prospective Rhodes Island operator once more."
 }

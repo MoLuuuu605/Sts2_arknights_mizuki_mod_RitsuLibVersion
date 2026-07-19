@@ -106,6 +106,19 @@
   "ARKNIGHTS_MIZUKI_POWER_ECHO_ALL_ME_DAMAGE_POWER.title":"众我",
   "ARKNIGHTS_MIZUKI_POWER_ECHO_ALL_ME_DAMAGE_POWER.smartDescription":"再打出[blue]{Amount}[/blue]张牌后,对所有敌人造成[blue]10[/blue]点伤害。",
   "ARKNIGHTS_MIZUKI_POWER_ECHO_ALL_ME_ENERGY_POWER.title":"众我",
-  "ARKNIGHTS_MIZUKI_POWER_ECHO_ALL_ME_ENERGY_POWER.smartDescription":"再打出[blue]{Amount}[/blue]张牌后,获得energyPrefix:energyIcons(1)}。"
-  
+  "ARKNIGHTS_MIZUKI_POWER_ECHO_ALL_ME_ENERGY_POWER.smartDescription":"再打出[blue]{Amount}[/blue]张牌后,获得energyPrefix:energyIcons(1)}。",
+  "ARKNIGHTS_MIZUKI_POWER_ECHO_LONG_ROAD_VULNERABILITY_POWER.title": "途长",
+  "ARKNIGHTS_MIZUKI_POWER_ECHO_LONG_ROAD_VULNERABILITY_POWER.description": "受到的伤害提高[red]50%[/red]。此效果与[gold]易伤[/gold]独立相乘。",
+  "ARKNIGHTS_MIZUKI_POWER_YAN_EROSION_POWER.title": "大炎的沧桑",
+  "ARKNIGHTS_MIZUKI_POWER_YAN_EROSION_POWER.description": "每个玩家回合开始时，获得[blue]1[/blue]点能量。",
+  "ARKNIGHTS_MIZUKI_POWER_SAMI_FORTITUDE_POWER.title": "萨米的坚韧",
+  "ARKNIGHTS_MIZUKI_POWER_SAMI_FORTITUDE_POWER.description": "受到的伤害减少[blue]2[/blue]。",
+  "ARKNIGHTS_MIZUKI_POWER_VICTORIA_GLORY_POWER.title": "维多利亚的荣耀",
+  "ARKNIGHTS_MIZUKI_POWER_VICTORIA_GLORY_POWER.description": "每次受到伤害时，有[blue]25%[/blue]概率免疫该次伤害。",
+  "ARKNIGHTS_MIZUKI_POWER_HEMATOPOIETIC_DISORDER_POWER.title": "造血障碍",
+  "ARKNIGHTS_MIZUKI_POWER_HEMATOPOIETIC_DISORDER_POWER.description": "生命低于[blue]80%[/blue]时，每个玩家回合结束后失去[red]1[/red]点生命。",
+  "ARKNIGHTS_MIZUKI_POWER_FOCUS_DISORDER_POWER.title": "专注失调",
+  "ARKNIGHTS_MIZUKI_POWER_FOCUS_DISORDER_POWER.description": "本场战斗的第[blue]1[/blue]个回合会被瓦库接管。",
+  "ARKNIGHTS_MIZUKI_POWER_ECHO_STRIFE_POWER.title": "回响：争斗",
+  "ARKNIGHTS_MIZUKI_POWER_ECHO_STRIFE_POWER.description": "每个玩家回合开始时，所有单位获得[blue]1[/blue]点力量。"
 }

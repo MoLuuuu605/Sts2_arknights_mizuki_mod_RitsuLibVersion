@@ -5,7 +5,6 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Entities.Cards;
-using Arknights_Mizuki.Scripts.StatusSlots;
 
 namespace Arknights_Mizuki.Scripts.Powers;
 
@@ -33,7 +32,6 @@ public sealed class EchoAllMeEnergyPower : ModPowerTemplate, IPowerExtraIconAmou
     {
         await base.AfterCardPlayed(choiceContext, cardPlay);
         if (cardPlay.Player.Creature != Owner) return;
-        if (!StatusSlotManager.ShouldSlotAffectCreature(StatusSlotType.SwarmCall, Owner)) return;
 
         await PowerCmd.Apply<EchoAllMeEnergyPower>(choiceContext, Owner, -1, Owner, null, false);
         if (Amount ==0)

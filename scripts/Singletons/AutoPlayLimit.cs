@@ -38,7 +38,7 @@ public class AutoPlayLimit : HookedSingletonModel
         if (counter.IsProcessing)
             return;
 
-        await DrainPendingCards(choiceContext, counter);
+        await DrainPendingCards(counter);
     }
 
     public override Task BeforeCardPlayed(CardPlay cardPlay)
@@ -54,7 +54,7 @@ public class AutoPlayLimit : HookedSingletonModel
 
         if (counter.CardPlayDepth <= 0 && !counter.IsProcessing)
         {
-            await ReleaseHeldCards(choiceContext, counter);
+            await ReleaseHeldCards(counter);
         }
     }
 
@@ -79,7 +79,7 @@ public class AutoPlayLimit : HookedSingletonModel
     {
         foreach (PlayerAutoPlayCounter counter in _playedByPlayer.Values)
         {
-            await ReleaseHeldCards(choiceContext, counter);
+            await ReleaseHeldCards(counter);
         }
     }
 
@@ -91,7 +91,7 @@ public class AutoPlayLimit : HookedSingletonModel
     {
         foreach (PlayerAutoPlayCounter counter in _playedByPlayer.Values)
         {
-            await ReleaseHeldCards(choiceContext, counter);
+            await ReleaseHeldCards(counter);
         }
 
         _playedByPlayer.Clear();
@@ -116,7 +116,7 @@ public class AutoPlayLimit : HookedSingletonModel
         _instance.GetOrCreateCounter(player.NetId).DrawDepth++;
     }
 
-    public static async Task EndDrawBatch(PlayerChoiceContext choiceContext, Player player)
+    public static async Task EndDrawBatch(Player player)
     {
         if (_instance == null)
             return;
@@ -126,11 +126,11 @@ public class AutoPlayLimit : HookedSingletonModel
 
         if (counter.DrawDepth <= 0 && !counter.IsProcessing)
         {
-            await _instance.DrainPendingCards(choiceContext, counter);
+            await _instance.DrainPendingCards(counter);
         }
     }
 
-    private async Task DrainPendingCards(PlayerChoiceContext choiceContext, PlayerAutoPlayCounter counter)
+    private async Task DrainPendingCards(PlayerAutoPlayCounter counter)
     {
         if (counter.IsProcessing)
             return;
@@ -138,6 +138,7 @@ public class AutoPlayLimit : HookedSingletonModel
         counter.IsProcessing = true;
         try
         {
+            PlayerChoiceContext choiceContext = new ThrowingPlayerChoiceContext();
             while (counter.PendingCards.Count > 0)
             {
                 CardModel pendingCard = counter.PendingCards.Pop();
@@ -168,18 +169,19 @@ public class AutoPlayLimit : HookedSingletonModel
             counter.IsProcessing = false;
             if (counter.CardPlayDepth <= 0 && counter.DrawDepth <= 0)
             {
-                await ReleaseHeldCards(choiceContext, counter);
+                await ReleaseHeldCards(counter);
             }
         }
     }
 
-    private static async Task ReleaseHeldCards(PlayerChoiceContext choiceContext, PlayerAutoPlayCounter counter)
+    private static async Task ReleaseHeldCards(PlayerAutoPlayCounter counter)
     {
         if (counter.HeldCards.Count == 0)
             return;
 
         List<HeldAutoPlayCard> heldCards = counter.HeldCards.ToList();
         counter.HeldCards.Clear();
+        PlayerChoiceContext choiceContext = new ThrowingPlayerChoiceContext();
 
         foreach (HeldAutoPlayCard heldCard in heldCards)
         {

@@ -17,7 +17,7 @@ public static class StatusSlotEffects
 
     // ── 启示效果 ───────────────────────────────────
     public static readonly EffectDef UrsusRoar = new("ursus_roar", StatusSlotType.Revelation,
-        $"{IconBase}/ursus_roar.png", 5);
+        $"{IconBase}/ursars_roar.png", 5);
     public static readonly EffectDef YanErosion = new("yan_erosion", StatusSlotType.Revelation,
         $"{IconBase}/yan_erosion.png", 5);
     public static readonly EffectDef ColumbiaInnovation = new("columbia_innovation", StatusSlotType.Revelation,

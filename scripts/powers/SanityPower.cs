@@ -53,9 +53,7 @@ public sealed class SanityPower : ModPowerTemplate,IHealthBarForecastSource
     public int GetBaseDamage(Creature owner)
     {
         int actNumber = owner.CombatState?.Players.FirstOrDefault()?.RunState.CurrentActIndex ?? 0;
-        var damage=BaseDamageAtActOne + actNumber * DamagePerAdditionalAct;
-        SetBaseDamage(damage);
-        return damage;
+        return BaseDamageAtActOne + actNumber * DamagePerAdditionalAct;
     }
 	protected override IEnumerable<DynamicVar> CanonicalVars => (IEnumerable<DynamicVar>)(object)new DynamicVar[3]
     {
@@ -145,6 +143,7 @@ public sealed class SanityPower : ModPowerTemplate,IHealthBarForecastSource
         // 基础上限25 + 已爆发次数*30 + 玩家SanityUnlimitPower层数*20
         var unlimitAmount = GetSharedUnlimitAmount(owner);
         var baseDamage = GetBaseDamage(owner);
+        SetBaseDamage(baseDamage);
         var burstMultiplier = (decimal)Math.Pow(DamageGrowthPerBurst, multiplier);
         var unlimitMultiplier = 1m + unlimitAmount * DamagePercentPerUnlimit / 100m;
         var damage = Math.Ceiling(baseDamage * burstMultiplier * unlimitMultiplier);

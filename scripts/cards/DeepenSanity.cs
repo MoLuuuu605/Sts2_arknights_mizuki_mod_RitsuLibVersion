@@ -26,7 +26,7 @@ public sealed class DeepenSanity : ModCardTemplate
 
     protected override IEnumerable<DynamicVar> CanonicalVars => (IEnumerable<DynamicVar>)(object)new DynamicVar[2]
     {
-        (DynamicVar)new DamageVar(5m, ValueProp.Move),
+        (DynamicVar)new DamageVar(12m, ValueProp.Move),
         (DynamicVar)new PowerVar<SanityMultiplierPower>(1m)
     };
 
@@ -36,7 +36,7 @@ public sealed class DeepenSanity : ModCardTemplate
         HoverTipFactory.FromPower<SanityBurstDescriptionPower>()
     };
 
-    // public override string PortraitPath => "res://Arknights_Mizuki/images/cards/DeepenSanity.png";
+    public override string PortraitPath => "res://Arknights_Mizuki/images/cards/DeepenSanity.png";
 
     public DeepenSanity() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary)
     {

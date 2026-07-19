@@ -224,7 +224,7 @@ public sealed class Key : ModRelicTemplate
 
     private static LinkedRewardSet CreateDriftingCofferRewardSet(Player player)
     {
-        return new LinkedRewardSet(new List<Reward>
+        return new DriftingCofferLinkedRewardSet(new List<Reward>
         {
             new DriftingCofferChoiceReward(
                 ModelDb.Relic<DriftingCoffer>().ToMutable(),

@@ -53,9 +53,7 @@ public sealed class DriftingCoffer : ModRelicTemplate
             rewards.Add(new CardReward(options, 3, Owner));
         }
         if (!RewardScreenExtraRewardInjector.TryAppendToCurrentSelection(Owner, rewards))
-        {
             await RewardsCmd.OfferCustom(Owner, rewards);
-        }
 
         await RelicCmd.Remove(this);
     }

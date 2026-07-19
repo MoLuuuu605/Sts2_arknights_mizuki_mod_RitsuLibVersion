@@ -36,7 +36,7 @@ public sealed class PainAmplify : ModCardTemplate
         HoverTipFactory.FromPower<SanityBurstDescriptionPower>()
     };
 
-    // public override string PortraitPath => "res://Arknights_Mizuki/images/cards/PainAmplify.png";
+    public override string PortraitPath => "res://Arknights_Mizuki/images/cards/PainAmplify.png";
 
     public PainAmplify() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary)
     {

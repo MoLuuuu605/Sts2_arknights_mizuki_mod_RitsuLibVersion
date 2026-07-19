@@ -9,13 +9,11 @@ parse_cards.py
 generate_table.py
 temp/
 .tmp/
-/Arknights_Mizuki.pck
-Arknights_Mizuki.json
 Cards.xlsx
 card_list.xlsx
 card_list.md
 *.pck
 *.import
 icon.svg
-images/
 TODO
+card_catalog.md

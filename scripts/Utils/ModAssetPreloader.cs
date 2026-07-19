@@ -10,7 +10,6 @@ public static class ModAssetPreloader
     private static readonly string[] CombatScenePaths =
     {
         "res://Arknights_Mizuki/monsters/floater.tscn",
-        "res://Arknights_Mizuki/monsters/crawler.tscn",
         "res://Arknights_Mizuki/monsters/harvest.tscn",
     };
 

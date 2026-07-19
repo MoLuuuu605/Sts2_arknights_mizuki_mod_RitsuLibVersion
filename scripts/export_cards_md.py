@@ -15,6 +15,8 @@ CARDS_DIR = PROJECT_ROOT / "scripts" / "cards"
 DEFAULT_LOCALE = PROJECT_ROOT / "Arknights_Mizuki" / "localization" / "zhs" / "cards.json"
 DEFAULT_OUTPUT = PROJECT_ROOT / "card_catalog.md"
 LOCALIZATION_PREFIX = "ARKNIGHTS_MIZUKI"
+PRIMARY_CARD_POOL = "MzkCardPool"
+TOKEN_CARD_POOL = "TokenCardPool"
 
 TYPE_NAMES = {
     "Attack": "攻击",
@@ -73,11 +75,29 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Export registered cards to Markdown.")
     parser.add_argument("-o", "--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--locale", type=Path, default=DEFAULT_LOCALE)
-    parser.add_argument("--include-token-pool", action="store_true", default=True)
+    token_group = parser.add_mutually_exclusive_group()
+    token_group.add_argument(
+        "--include-token-pool",
+        dest="include_token_pool",
+        action="store_true",
+        help="Include cards registered to TokenCardPool (default).",
+    )
+    token_group.add_argument(
+        "--exclude-token-pool",
+        dest="include_token_pool",
+        action="store_false",
+        help="Exclude cards registered to TokenCardPool.",
+    )
+    parser.set_defaults(include_token_pool=True)
     args = parser.parse_args()
 
     localization = json.loads(args.locale.read_text(encoding="utf-8-sig"))
     cards = collect_cards(localization, args.include_token_pool)
+    if not cards:
+        raise RuntimeError(
+            f"No registered cards found in {CARDS_DIR}. "
+            "Check the card registration attribute parser."
+        )
     write_markdown(cards, args.output)
     print(f"Wrote {len(cards)} cards to {args.output}")
 
@@ -86,12 +106,17 @@ def collect_cards(localization: dict[str, str], include_token_pool: bool) -> lis
     cards: list[CardInfo] = []
     for path in sorted(CARDS_DIR.glob("*.cs")):
         text = path.read_text(encoding="utf-8-sig")
-        pool_match = re.search(r"\[Pool\(typeof\((\w+)\)\)\]", text)
+        pool_match = re.search(
+            r"\[(?:RegisterCard|Pool)\s*\(\s*typeof\s*\(\s*([\w.]+)\s*\)\s*\)\s*\]",
+            text,
+        )
         if not pool_match:
             continue
 
-        pool = pool_match.group(1)
-        if pool != "MzkCardPool" and not include_token_pool:
+        pool = pool_match.group(1).rsplit(".", maxsplit=1)[-1]
+        if pool not in {PRIMARY_CARD_POOL, TOKEN_CARD_POOL}:
+            continue
+        if pool == TOKEN_CARD_POOL and not include_token_pool:
             continue
 
         show_match = re.search(r"shouldShowInCardLibrary\s*=\s*(true|false)", text)
@@ -100,15 +125,17 @@ def collect_cards(localization: dict[str, str], include_token_pool: bool) -> lis
 
         class_name = require_match(r"\bclass\s+(\w+)\s*:", text, path)
         card_id = class_to_card_id(class_name)
-        title = localization.get(f"{LOCALIZATION_PREFIX}-{card_id}.title", card_id)
-        template = localization.get(f"{LOCALIZATION_PREFIX}-{card_id}.description", "")
+        localization_base = f"{LOCALIZATION_PREFIX}_CARD_{card_id}"
+        title = require_localization(localization, f"{localization_base}.title", path)
+        template = require_localization(localization, f"{localization_base}.description", path)
 
         variables = parse_dynamic_values(text)
         apply_upgrades(text, variables)
 
         cost = parse_cost(text)
         upgraded_cost = parse_upgraded_cost(text, cost)
-        rarity = parse_named_const(text, "CardRarity", "rarity")
+        raw_rarity = parse_named_const(text, "CardRarity", "rarity")
+        rarity = "衍生" if pool == TOKEN_CARD_POOL else RARITY_NAMES.get(raw_rarity, raw_rarity)
         card_type = parse_named_const(text, "CardType", "type")
 
         description = render_description(template, variables, upgraded=False)
@@ -121,7 +148,7 @@ def collect_cards(localization: dict[str, str], include_token_pool: bool) -> lis
                 class_name=class_name,
                 card_id=card_id,
                 title=title,
-                rarity=RARITY_NAMES.get(rarity, rarity),
+                rarity=rarity,
                 cost=cost,
                 upgraded_cost=upgraded_cost,
                 card_type=TYPE_NAMES.get(card_type, card_type),
@@ -138,6 +165,12 @@ def require_match(pattern: str, text: str, path: Path) -> str:
     if not match:
         raise ValueError(f"Could not parse {path}: {pattern}")
     return match.group(1)
+
+
+def require_localization(localization: dict[str, str], key: str, path: Path) -> str:
+    if key not in localization:
+        raise ValueError(f"Missing localization for {path}: {key}")
+    return localization[key]
 
 
 def class_to_card_id(class_name: str) -> str:
@@ -322,8 +355,9 @@ def rarity_sort_key(rarity: str) -> tuple[int, str]:
         "罕见": 2,
         "稀有": 3,
         "远古": 4,
-        "状态": 5,
-        "诅咒": 6,
+        "衍生": 5,
+        "状态": 6,
+        "诅咒": 7,
     }
     return (order.get(rarity, 99), rarity)
 
@@ -332,7 +366,7 @@ def write_markdown(cards: list[CardInfo], output: Path) -> None:
     rows = [
         "# 已注册卡牌整理",
         "",
-        f"共 {len(cards)} 张。来源：`scripts/cards/*.cs` 中带 `[Pool(...)]` 的卡牌，已排除 `.NotForUse` 文件。",
+        f"共 {len(cards)} 张。来源：`scripts/cards/*.cs` 中带 `[RegisterCard(...)]` 或旧版 `[Pool(...)]` 的卡牌，已排除 `.NotForUse` 文件。",
         "",
         "| 名称 | 稀有度 | 能耗 | 类型 | 效果 |",
         "|---|---|---:|---|---|",

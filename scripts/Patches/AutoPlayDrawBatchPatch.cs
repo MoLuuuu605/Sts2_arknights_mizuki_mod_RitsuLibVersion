@@ -15,14 +15,13 @@ public static class AutoPlayDrawBatchPatch
         AutoPlayLimit.BeginDrawBatch(player);
     }
 
-    private static void Postfix(PlayerChoiceContext choiceContext, Player player, ref Task<IEnumerable<CardModel>> __result)
+    private static void Postfix(Player player, ref Task<IEnumerable<CardModel>> __result)
     {
-        __result = FinishDrawBatch(__result, choiceContext, player);
+        __result = FinishDrawBatch(__result, player);
     }
 
     private static async Task<IEnumerable<CardModel>> FinishDrawBatch(
         Task<IEnumerable<CardModel>> drawTask,
-        PlayerChoiceContext choiceContext,
         Player player)
     {
         try
@@ -31,7 +30,7 @@ public static class AutoPlayDrawBatchPatch
         }
         finally
         {
-            await AutoPlayLimit.EndDrawBatch(choiceContext, player);
+            await AutoPlayLimit.EndDrawBatch(player);
         }
     }
 }

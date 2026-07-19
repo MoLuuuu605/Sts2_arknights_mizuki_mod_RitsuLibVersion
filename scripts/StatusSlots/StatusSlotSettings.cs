@@ -1,7 +1,27 @@
 using STS2RitsuLib;
 using STS2RitsuLib.Settings;
+using STS2RitsuLib.Utils.Persistence;
+using Arknights_Mizuki.Scripts.Settings;
 
 namespace Arknights_Mizuki.Scripts.StatusSlots;
+
+internal sealed class MizukiModSettingsData
+{
+    public bool RevelationEnabled { get; set; } = StatusSlotSettings.DefaultRevelationEnabled;
+    public bool AberrationEnabled { get; set; } = StatusSlotSettings.DefaultAberrationEnabled;
+    public bool SwarmCallEnabled { get; set; } = StatusSlotSettings.DefaultSwarmCallEnabled;
+    public bool RevelationAffectsOtherCharacters { get; set; } = StatusSlotSettings.DefaultRevelationAffectsOtherCharacters;
+    public bool AberrationAffectsOtherCharacters { get; set; } = StatusSlotSettings.DefaultAberrationAffectsOtherCharacters;
+    public bool SwarmCallAffectsOtherCharacters { get; set; } = StatusSlotSettings.DefaultSwarmCallAffectsOtherCharacters;
+    public double SwarmCallChance { get; set; } = StatusSlotSettings.DefaultSwarmCallChance;
+    public double RevelationChance { get; set; } = StatusSlotSettings.DefaultRevelationChance;
+    public double AberrationHpThreshold { get; set; } = StatusSlotSettings.DefaultAberrationHpThreshold;
+    public double AberrationChance { get; set; } = StatusSlotSettings.DefaultAberrationChance;
+    public SublimationEventMode SublimationEventMode { get; set; } = FourthActSettings.DefaultSublimationEventMode;
+    public bool SublimationEventAffectsOtherCharacters { get; set; } = FourthActSettings.DefaultSublimationEventAffectsOtherCharacters;
+    public double NormalCombatScaling { get; set; } = FourthActSettings.DefaultNormalCombatScaling;
+    public double BossCombatScaling { get; set; } = FourthActSettings.DefaultBossCombatScaling;
+}
 
 /// <summary>
 /// 基于 RitsuLib ModSettings 的三个开关配置。
@@ -9,6 +29,7 @@ namespace Arknights_Mizuki.Scripts.StatusSlots;
 /// </summary>
 internal static class StatusSlotSettings
 {
+    internal const string SettingsDataKey = "mod_settings";
     public const bool DefaultRevelationEnabled = true;
     public const bool DefaultAberrationEnabled = true;
     public const bool DefaultSwarmCallEnabled = true;
@@ -35,22 +56,34 @@ internal static class StatusSlotSettings
 
     public static void Register()
     {
-        // 默认全部启用
-        RevelationEnabled = ModSettingsBindings.InMemory<bool>(ModId, "status_slot.revelation_enabled", DefaultRevelationEnabled);
-        AberrationEnabled = ModSettingsBindings.InMemory<bool>(ModId, "status_slot.aberration_enabled", DefaultAberrationEnabled);
-        SwarmCallEnabled = ModSettingsBindings.InMemory<bool>(ModId, "status_slot.swarm_call_enabled", DefaultSwarmCallEnabled);
-        RevelationAffectsOtherCharacters = ModSettingsBindings.InMemory<bool>(ModId, "status_slot.revelation_affects_other_characters", DefaultRevelationAffectsOtherCharacters);
-        AberrationAffectsOtherCharacters = ModSettingsBindings.InMemory<bool>(ModId, "status_slot.aberration_affects_other_characters", DefaultAberrationAffectsOtherCharacters);
-        SwarmCallAffectsOtherCharacters = ModSettingsBindings.InMemory<bool>(ModId, "status_slot.swarm_call_affects_other_characters", DefaultSwarmCallAffectsOtherCharacters);
-        SwarmCallChance = ModSettingsBindings.InMemory<double>(ModId, "status_slot.swarm_call_chance", DefaultSwarmCallChance);
-        RevelationChance = ModSettingsBindings.InMemory<double>(ModId, "status_slot.revelation_chance", DefaultRevelationChance);
-        AberrationHpThreshold = ModSettingsBindings.InMemory<double>(ModId, "status_slot.aberration_hp_threshold", DefaultAberrationHpThreshold);
-        AberrationChance = ModSettingsBindings.InMemory<double>(ModId, "status_slot.aberration_chance", DefaultAberrationChance);
+        using (RitsuLibFramework.BeginModDataRegistration(ModId))
+        {
+            RitsuLibFramework.GetDataStore(ModId).Register(
+                SettingsDataKey,
+                "settings",
+                SaveScope.Global,
+                () => new MizukiModSettingsData(),
+                autoCreateIfMissing: true);
+        }
+
+        FourthActSettings.RegisterBindings();
+
+        RevelationEnabled = Global(data => data.RevelationEnabled, (data, value) => data.RevelationEnabled = value, DefaultRevelationEnabled);
+        AberrationEnabled = Global(data => data.AberrationEnabled, (data, value) => data.AberrationEnabled = value, DefaultAberrationEnabled);
+        SwarmCallEnabled = Global(data => data.SwarmCallEnabled, (data, value) => data.SwarmCallEnabled = value, DefaultSwarmCallEnabled);
+        RevelationAffectsOtherCharacters = Global(data => data.RevelationAffectsOtherCharacters, (data, value) => data.RevelationAffectsOtherCharacters = value, DefaultRevelationAffectsOtherCharacters);
+        AberrationAffectsOtherCharacters = Global(data => data.AberrationAffectsOtherCharacters, (data, value) => data.AberrationAffectsOtherCharacters = value, DefaultAberrationAffectsOtherCharacters);
+        SwarmCallAffectsOtherCharacters = Global(data => data.SwarmCallAffectsOtherCharacters, (data, value) => data.SwarmCallAffectsOtherCharacters = value, DefaultSwarmCallAffectsOtherCharacters);
+        SwarmCallChance = Global(data => data.SwarmCallChance, (data, value) => data.SwarmCallChance = value, DefaultSwarmCallChance);
+        RevelationChance = Global(data => data.RevelationChance, (data, value) => data.RevelationChance = value, DefaultRevelationChance);
+        AberrationHpThreshold = Global(data => data.AberrationHpThreshold, (data, value) => data.AberrationHpThreshold = value, DefaultAberrationHpThreshold);
+        AberrationChance = Global(data => data.AberrationChance, (data, value) => data.AberrationChance = value, DefaultAberrationChance);
 
         RitsuLibFramework.RegisterModSettings(ModId, page =>
         {
-            page.WithTitle(ModSettingsText.Literal("Arknights Mizuki 状态栏位"));
-            page.WithDescription(ModSettingsText.Literal("控制启示、排异反应、回响系统的开关。"));
+            page.WithTitle(ModSettingsText.Literal("Arknights Mizuki 设置"));
+            page.WithDescription(ModSettingsText.Literal(
+                "控制状态栏位与第四层入口事件。联机时，启示、排异反应和回响统一使用主机配置。"));
 
             page.AddSection("revelation", section =>
             {
@@ -91,14 +124,14 @@ internal static class StatusSlotSettings
                     AberrationHpThreshold,
                     5, 50, 1,
                     v => $"{v:F0}",
-                    ModSettingsText.Literal("单场战斗失去生命超过此值时触发判定。默认 15。"));
+                    ModSettingsText.Literal("单场战斗失去生命达到此值时触发判定。默认 10。"));
                 section.AddSlider(
                     "aberration_chance",
                     ModSettingsText.Literal("排异获得概率"),
                     AberrationChance,
                     0.0, 1.0, 0.05,
                     v => $"{v * 100:F0}%",
-                    ModSettingsText.Literal("达到受伤阈值后获得排异反应的概率。默认 40%。"));
+                    ModSettingsText.Literal("达到受伤阈值后获得排异反应的概率。默认 50%。"));
             });
 
             page.AddSection("swarm_call", section =>
@@ -121,6 +154,43 @@ internal static class StatusSlotSettings
                     v => $"{v * 100:F0}%",
                     ModSettingsText.Literal("每层开始时获得回响的概率。默认 80%。"));
             });
+
+            page.AddSection("fourth_act", section =>
+            {
+                section.AddEnumChoice(
+                    "sublimation_event_mode",
+                    ModSettingsText.Literal("升华事件出现方式"),
+                    FourthActSettings.SublimationMode,
+                    mode => ModSettingsText.Literal(mode switch
+                    {
+                        SublimationEventMode.Disabled => "关闭",
+                        SublimationEventMode.EventPool => "仅加入事件池",
+                        _ => "强制第一个问号房"
+                    }),
+                    ModSettingsText.Literal("控制升华事件是否出现，以及是否替换第三层遇到的第一个问号房。"));
+                section.AddToggle(
+                    "sublimation_event_other_characters_toggle",
+                    ModSettingsText.Literal("允许其他角色遇到升华事件"),
+                    FourthActSettings.SublimationEventAffectsOtherCharacters,
+                    ModSettingsText.Literal("默认关闭。关闭时，只有水月角色能触发升华事件。"));
+                section.WithEntryEnabledWhen(
+                    "sublimation_event_other_characters_toggle",
+                    () => FourthActSettings.CurrentSublimationMode != SublimationEventMode.Disabled);
+                section.AddSlider(
+                    "fourth_act_normal_combat_scaling",
+                    ModSettingsText.Literal("第四层普通战联机倍率"),
+                    FourthActSettings.NormalCombatScaling,
+                    1.0, 3.0, 0.05,
+                    value => $"{value:F2}x",
+                    ModSettingsText.Literal("第四层非 Boss 战斗的联机难度倍率。默认 1.30x，由主机配置。"));
+                section.AddSlider(
+                    "fourth_act_boss_combat_scaling",
+                    ModSettingsText.Literal("第四层 Boss 联机倍率"),
+                    FourthActSettings.BossCombatScaling,
+                    1.0, 3.0, 0.05,
+                    value => $"{value:F2}x",
+                    ModSettingsText.Literal("第四层 Boss 战斗的联机难度倍率。默认 1.40x，由主机配置。"));
+            });
         });
     }
 
@@ -134,4 +204,14 @@ internal static class StatusSlotSettings
     public static double RevelationChanceValue => RevelationChance.Read();
     public static int AberrationHpThresholdValue => (int)AberrationHpThreshold.Read();
     public static double AberrationChanceValue => AberrationChance.Read();
+
+    internal static IModSettingsValueBinding<TValue> Global<TValue>(
+        Func<MizukiModSettingsData, TValue> getter,
+        Action<MizukiModSettingsData, TValue> setter,
+        TValue defaultValue)
+    {
+        return ModSettingsBindings.WithDefault(
+            ModSettingsBindings.Global(ModId, SettingsDataKey, getter, setter),
+            () => defaultValue);
+    }
 }

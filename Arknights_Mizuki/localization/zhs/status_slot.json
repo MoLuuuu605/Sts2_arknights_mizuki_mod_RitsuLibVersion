@@ -18,7 +18,7 @@
     "effect.columbia_innovation.desc": "下次战斗结束时额外获得1次稀有卡牌奖励。",
 
     "effect.sami_fortitude.name": "萨米的坚韧",
-    "effect.sami_fortitude.desc": "所有敌人造成的伤害-2。",
+    "effect.sami_fortitude.desc": "受到的所有伤害-2。",
 
     "effect.victoria_glory.name": "维多利亚的荣耀",
     "effect.victoria_glory.desc": "每次受到伤害时有25%概率免疫。",
@@ -30,7 +30,7 @@
     "effect.sargon_generosity.desc": "获得时随机获得2个遗物。",
 
     "effect.hematopoietic_disorder.name": "造血障碍",
-    "effect.hematopoietic_disorder.desc": "血量低于80%时，每场回合结束后失去1点生命。",
+    "effect.hematopoietic_disorder.desc": "血量低于80%时，每回合结束后失去1点生命。",
 
     "effect.focus_disorder.name": "专注失调",
     "effect.focus_disorder.desc": "每场战斗的第1个回合会被瓦库接管。",

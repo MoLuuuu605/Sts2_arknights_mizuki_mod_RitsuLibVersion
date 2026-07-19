@@ -1,4 +1,8 @@
 {
   "ARKNIGHTS_MIZUKI_ENCOUNTER_KNIGHT_BOSS_ENCOUNTER.title": "最後の騎士",
-  "ARKNIGHTS_MIZUKI_ENCOUNTER_KNIGHT_BOSS_ENCOUNTER.loss": "{character}は[gold]{encounter}[/gold]の寒潮に倒れた。"
+  "ARKNIGHTS_MIZUKI_ENCOUNTER_KNIGHT_BOSS_ENCOUNTER.loss": "{character}は[gold]{encounter}[/gold]の寒潮に呑まれた。",
+  "ARKNIGHTS_MIZUKI_ENCOUNTER_SINGULARITY_BOSS_ENCOUNTER.title": "イズミック、生態の源",
+  "ARKNIGHTS_MIZUKI_ENCOUNTER_SINGULARITY_BOSS_ENCOUNTER.description": "{character}は[gold]己自身[/gold]の下に消えた。",
+  "ARKNIGHTS_MIZUKI_ENCOUNTER_SINGULARITY_ELITE_ENCOUNTER.title": "寒災",
+  "ARKNIGHTS_MIZUKI_ENCOUNTER_SINGULARITY_ELITE_ENCOUNTER.description": "{character}はロドスへの加入を望む臨時オペレーターと再会した。"
 }

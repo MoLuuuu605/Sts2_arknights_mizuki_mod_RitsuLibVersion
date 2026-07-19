@@ -86,7 +86,7 @@ public sealed class LastTidewatcher : ModAncientEventTemplate
     }
 
     private bool CanOwnerUseSwarmCall
-        => Owner != null && StatusSlotManager.GetStatusSlotOwnerPlayer(StatusSlotType.SwarmCall) == Owner;
+        => Owner != null && StatusSlotManager.IsSlotEnabled(Owner, StatusSlotType.SwarmCall);
 
     public override IEnumerable<EventOption> AllPossibleOptions =>
         Pool1.Concat(Pool2).Concat(Pool3);
@@ -169,9 +169,10 @@ public sealed class LastTidewatcher : ModAncientEventTemplate
         if (Owner == null) { Done(); return; }
         if (!CanOwnerUseSwarmCall) { Done(); return; }
 
-        await StatusSlotManager.RemoveEffectAsync(StatusSlotType.Aberration);
-        await StatusSlotManager.RemoveEffectAsync(StatusSlotType.SwarmCall);
-        await StatusSlotManager.AssignEffectAsync(StatusSlotType.SwarmCall, "echo_allme");
+        var choiceContext = new ThrowingPlayerChoiceContext();
+        await StatusSlotManager.RemoveEffectAsync(Owner, StatusSlotType.Aberration, choiceContext);
+        await StatusSlotManager.RemoveEffectAsync(Owner, StatusSlotType.SwarmCall, choiceContext);
+        await StatusSlotManager.AssignEffectAsync(Owner, StatusSlotType.SwarmCall, "echo_allme", choiceContext);
         Done();
     }
 }

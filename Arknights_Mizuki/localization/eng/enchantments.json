@@ -1,5 +1,5 @@
 {
   "ARKNIGHTS_MIZUKI_ENCHANTMENT_REVELATION_ENCHANTMENT.title": "Revelation",
-  "ARKNIGHTS_MIZUKI_ENCHANTMENT_REVELATION_ENCHANTMENT.description": "When played, randomly trigger one of the following effects:\nDraw [gold]{Cards}[/gold] cards\nHeal [gold]{Hp}[/gold] HP\nApply [gold]{SanityPower}[/gold] [blue]Neural Damage[/blue] to the target\nObtain a random relic",
+  "ARKNIGHTS_MIZUKI_ENCHANTMENT_REVELATION_ENCHANTMENT.description": "The first time this is played, randomly trigger one of the following:\nDraw [gold]{Cards}[/gold] cards.\nHeal [gold]{Hp}[/gold] HP.\nApply [gold]{SanityPower}[/gold] [blue]Neural Damage[/blue] to a random enemy.\nGain a random relic.",
   "ARKNIGHTS_MIZUKI_ENCHANTMENT_REVELATION_ENCHANTMENT.extraCardText": "Gain a random Revelation."
 }

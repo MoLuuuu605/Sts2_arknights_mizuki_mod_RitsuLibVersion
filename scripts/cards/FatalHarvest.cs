@@ -42,7 +42,7 @@ public sealed class FatalHarvest : ModCardTemplate
         CardKeyword.Exhaust
     };
 
-    // public override string PortraitPath => "res://Arknights_Mizuki/images/cards/FatalHarvest.png";
+    public override string PortraitPath => "res://Arknights_Mizuki/images/cards/FatalHarvest.png";
 
     public FatalHarvest() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary)
     {

@@ -50,16 +50,16 @@ public sealed class StatusSlotConsoleCmd : AbstractConsoleCmd
 
         return action switch
         {
-            "add" => HandleAdd(args),
-            "remove" => HandleRemove(args),
-            "clear" => HandleClear(),
-            "info" => HandleInfo(),
+            "add" => HandleAdd(issuingPlayer, args),
+            "remove" => HandleRemove(issuingPlayer, args),
+            "clear" => HandleClear(issuingPlayer),
+            "info" => HandleInfo(issuingPlayer),
             "list" => HandleList(args),
             _ => new CmdResult(success: false, $"未知操作: {action}\n{UsageText}")
         };
     }
 
-    private CmdResult HandleAdd(string[] args)
+    private CmdResult HandleAdd(Player issuingPlayer, string[] args)
     {
         if (args.Length < 2)
         {
@@ -74,7 +74,7 @@ public sealed class StatusSlotConsoleCmd : AbstractConsoleCmd
 
         // 如果指定了 effect_key，用指定的；否则用该槽位第一个效果
         string effectKey;
-        if (!StatusSlotManager.IsSlotEnabled(slot.Value))
+        if (!StatusSlotManager.IsSlotEnabled(issuingPlayer, slot.Value))
         {
             return new CmdResult(success: false, $"{slot.Value} is disabled for this run.");
         }
@@ -98,14 +98,14 @@ public sealed class StatusSlotConsoleCmd : AbstractConsoleCmd
             effectKey = effects[0].Key;
         }
 
-        StatusSlotManager.AssignEffect(slot.Value, effectKey);
+        StatusSlotManager.AssignEffect(issuingPlayer, slot.Value, effectKey);
 
         var name = StatusSlotI18n.GetEffectName(effectKey);
         var charges = StatusSlotEffects.FindByKey(effectKey)!.DefaultCharges;
         return new CmdResult(success: true, $"已添加 {name} ({effectKey}) 到 {slot.Value}，剩余 {charges} 场。");
     }
 
-    private CmdResult HandleRemove(string[] args)
+    private CmdResult HandleRemove(Player issuingPlayer, string[] args)
     {
         if (args.Length < 2)
         {
@@ -118,25 +118,21 @@ public sealed class StatusSlotConsoleCmd : AbstractConsoleCmd
             return new CmdResult(success: false, $"未知槽位: {args[1]}");
         }
 
-        StatusSlotManager.RemoveEffect(slot.Value);
+        StatusSlotManager.RemoveEffect(issuingPlayer, slot.Value);
         return new CmdResult(success: true, $"已移除 {slot.Value} 槽位的效果。");
     }
 
-    private CmdResult HandleClear()
+    private CmdResult HandleClear(Player issuingPlayer)
     {
-        StatusSlotManager.RemoveEffect(StatusSlotType.Revelation);
-        StatusSlotManager.RemoveEffect(StatusSlotType.Aberration);
-        StatusSlotManager.RemoveEffect(StatusSlotType.SwarmCall);
+        StatusSlotManager.RemoveEffect(issuingPlayer, StatusSlotType.Revelation);
+        StatusSlotManager.RemoveEffect(issuingPlayer, StatusSlotType.Aberration);
+        StatusSlotManager.RemoveEffect(issuingPlayer, StatusSlotType.SwarmCall);
         return new CmdResult(success: true, "已清空所有槽位。");
     }
 
-    private CmdResult HandleInfo()
+    private CmdResult HandleInfo(Player issuingPlayer)
     {
-        var data = StatusSlotManager.GetData();
-        if (data == null)
-        {
-            return new CmdResult(success: false, "数据未初始化。");
-        }
+        var data = StatusSlotManager.GetState(issuingPlayer);
 
         var sb = new System.Text.StringBuilder();
         sb.AppendLine("状态栏位:");

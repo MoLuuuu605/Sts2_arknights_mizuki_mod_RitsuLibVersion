@@ -2,6 +2,7 @@ using STS2RitsuLib.Interop.AutoRegistration;
 using STS2RitsuLib.Scaffolding.Content;
 using Arknights_Mizuki.Scripts.Characters;
 using Arknights_Mizuki.Scripts.Relics;
+using Arknights_Mizuki.Scripts.Settings;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Events;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
@@ -29,7 +30,10 @@ public sealed class Sublimation : ModEventTemplate
     };
     public override bool IsAllowed(IRunState runState)
     {
-        return runState is RunState state && state.CurrentActIndex == 2 && !state.VisitedEventIds.Contains(Id);
+        return runState is RunState state &&
+               state.CurrentActIndex == 2 &&
+               FourthActSettings.ShouldOfferSublimation(state) &&
+               !state.VisitedEventIds.Contains(Id);
     }
 
     protected override IReadOnlyList<EventOption> GenerateInitialOptions()

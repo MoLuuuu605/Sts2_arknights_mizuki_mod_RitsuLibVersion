@@ -1,4 +1,5 @@
 using Arknights_Mizuki.Scripts.Events;
+using Arknights_Mizuki.Scripts.Settings;
 using Arknights_Mizuki.Scripts.Utils;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Hooks;
@@ -26,7 +27,7 @@ public static class SublimationNextEventPatch
 {
     private static void Postfix(IRunState runState, ref EventModel __result)
     {
-        if (SublimationEventPatchUtil.ShouldForceSublimation(runState) || SublimationEventPatchUtil.IsSublimationPending(runState))
+        if (SublimationEventPatchUtil.ShouldForceSublimation(runState))
         {
             __result = ModelDb.Event<Sublimation>();
         }
@@ -39,7 +40,7 @@ public static class SublimationRollRoomTypePatch
     private static bool Prefix(RunManager __instance, MapPointType pointType, ref RoomType __result)
     {
         RunState? state = __instance.DebugOnlyGetState();
-        if (pointType == MapPointType.Unknown && state != null && SublimationEventPatchUtil.IsSublimationPending(state))
+        if (pointType == MapPointType.Unknown && state != null && SublimationEventPatchUtil.IsSublimationForcePending(state))
         {
             __result = RoomType.Event;
             return false;
@@ -53,9 +54,15 @@ internal static class SublimationEventPatchUtil
 {
     public static bool ShouldForceSublimation(IRunState runState)
     {
-        return IsSublimationPending(runState)
+        return IsSublimationForcePending(runState)
             && runState is RunState state
             && state.CurrentMapPoint?.PointType == MapPointType.Unknown;
+    }
+
+    public static bool IsSublimationForcePending(IRunState runState)
+    {
+        return FourthActSettings.GetSublimationMode(runState) == SublimationEventMode.ForceFirstUnknown &&
+               IsSublimationPending(runState);
     }
 
     public static bool IsSublimationPending(IRunState runState)
@@ -66,6 +73,11 @@ internal static class SublimationEventPatchUtil
         }
 
         if (state.CurrentActIndex != 2)
+        {
+            return false;
+        }
+
+        if (!FourthActSettings.ShouldOfferSublimation(state))
         {
             return false;
         }

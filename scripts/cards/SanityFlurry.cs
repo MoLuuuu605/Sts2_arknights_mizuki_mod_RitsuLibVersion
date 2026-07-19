@@ -40,7 +40,7 @@ public sealed class SanityFlurry : ModCardTemplate
         HoverTipFactory.FromPower<SanityBurstDescriptionPower>()
     };
 
-    // public override string PortraitPath => "res://Arknights_Mizuki/images/cards/SanityFlurry.png";
+    public override string PortraitPath => "res://Arknights_Mizuki/images/cards/SanityFlurry.png";
 
     public SanityFlurry() : base(energyCost, type, rarity, targetType, shouldShowInCardLibrary)
     {

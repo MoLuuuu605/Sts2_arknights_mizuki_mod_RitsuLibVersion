@@ -2,121 +2,84 @@ using Arknights_Mizuki.Scripts.Characters;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Entities.Gold;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Factories;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Random;
+using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
+using MegaCrit.Sts2.Core.ValueProps;
+using System.Buffers.Binary;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Arknights_Mizuki.Scripts.StatusSlots;
 
-/// <summary>
-/// 状态栏位管理器。负责数据存取、效果添加/移除、UI 刷新。
-/// 数据存在 StatusSlotDataModifier（挂到 RunState 上的 ModifierModel）里，
-/// 通过 [SavedProperty] 自动存档/读档，自动支持多人同步。
-/// </summary>
 public static class StatusSlotManager
 {
-    private static StatusSlotDataModifier? _data;
+    private static StatusSlotDataModifier? _hookModifier;
     private static RunState? _runState;
 
-    // ── 数据存取 ───────────────────────────────────
-
-    /// <summary>
-    /// 确保数据已加载。只查找或创建 StatusSlotDataModifier，不挂到 RunState.Modifiers。
-    /// 新局开始时调用——避免在 Neow 选项生成前让 Modifiers.Count > 0，否则 Neow 会跳过正常选项。
-    /// </summary>
     public static void EnsureData(RunState runState)
     {
         _runState = runState;
-        _data = GetDataModifier(runState);
-        _data.EnsureRunSettingsCaptured(runState);
-        Entry.Logger.Info($"[StatusSlot] Data ensured. Rev={_data.RevelationKey}/{_data.RevelationCharges}, Aber={_data.AberrationKey}/{_data.AberrationCharges}, Swarm={_data.SwarmCallKey}/{_data.SwarmCallCharges}");
+        _hookModifier = GetOrCreateHookModifier(runState);
+        StatusSlotRunData.EnsurePlayers(runState);
+        _hookModifier.MigrateLegacyState(runState);
     }
 
-    /// <summary>
-    /// 将 StatusSlotDataModifier 挂到 RunState.Modifiers，使其被存档系统序列化。
-    /// 应在 Neow 事件结束后（进入非 Ancient 房间时）调用，避免影响 Neow 选项生成。
-    /// </summary>
     public static void AttachModifier(RunState runState)
     {
-        if (_data == null) return;
+        if (_hookModifier == null)
+            return;
 
-        // 已挂载则跳过
-        if (runState.Modifiers.OfType<StatusSlotDataModifier>().Any())
+        var existing = runState.Modifiers.OfType<StatusSlotDataModifier>().LastOrDefault();
+        if (existing != null)
         {
-            _data = runState.Modifiers.OfType<StatusSlotDataModifier>().Last();
-            _data.EnsureRunSettingsCaptured(runState);
+            _hookModifier = existing;
             return;
         }
 
-        // 新局首次：数据是静态的，尚未挂载；挂到 Modifiers 让存档系统接管
-        runState.AddModifierDebug(_data);
-        Entry.Logger.Info("[StatusSlot] Attached StatusSlotDataModifier to RunState.Modifiers");
+        runState.AddModifierDebug(_hookModifier);
+        Entry.Logger.Info("[StatusSlot] Attached StatusSlotDataModifier hook carrier");
     }
 
-    public static StatusSlotDataModifier? GetData() => _data;
     public static RunState? GetRunState() => _runState;
 
-    internal static Player? GetPrimaryPlayer()
+    internal static IEnumerable<Player> GetOrderedPlayers()
     {
-        var runState = _runState;
-        if (runState == null || runState.Players.Count == 0)
-            return null;
+        if (_runState == null)
+            return Enumerable.Empty<Player>();
 
-        return GetOrderedPlayers(runState).FirstOrDefault();
-    }
-
-    internal static Player? GetStatusSlotOwnerPlayer(StatusSlotType type)
-    {
-        var runState = _runState;
-        if (runState == null || runState.Players.Count == 0)
-            return null;
-
-        if (!IsMechanismEnabled(type))
-            return null;
-
-        var orderedPlayers = GetOrderedPlayers(runState).ToList();
-        var mizuki = orderedPlayers.FirstOrDefault(IsMizukiPlayer);
-        if (mizuki != null)
-            return mizuki;
-
-        return CanAffectOtherCharacters(type)
-            ? orderedPlayers.FirstOrDefault()
-            : null;
-    }
-
-    internal static bool IsPlayerEligibleForSlot(Player player, StatusSlotType type)
-    {
-        if (!IsMechanismEnabled(type))
-            return false;
-
-        return IsMizukiPlayer(player) || CanAffectOtherCharacters(type);
-    }
-
-    internal static bool ShouldSlotAffectCreature(StatusSlotType type, Creature creature)
-    {
-        var owner = GetPlayerForCreature(creature);
-        return owner == null || IsPlayerEligibleForSlot(owner, type);
-    }
-
-    internal static bool IsMizukiPlayer(Player player) => player.Character is Mizuki;
-
-    private static IEnumerable<Player> GetOrderedPlayers(RunState runState)
-    {
-        return runState.Players
-            .Select(p => new { Player = p, SlotIndex = runState.GetPlayerSlotIndex(p) })
-            .OrderBy(x => x.SlotIndex < 0 ? int.MaxValue : x.SlotIndex)
+        return _runState.Players
+            .Select(player => new { Player = player, Slot = _runState.GetPlayerSlotIndex(player) })
+            .OrderBy(x => x.Slot < 0 ? int.MaxValue : x.Slot)
+            .ThenBy(x => x.Player.NetId)
             .Select(x => x.Player);
     }
 
-    private static Player? GetPlayerForCreature(Creature creature)
+    internal static Player? GetLocalPlayer()
     {
-        var runState = _runState;
-        if (runState == null)
+        if (_runState == null || _runState.Players.Count == 0)
             return null;
 
-        foreach (var player in runState.Players)
+        return LocalContext.GetMe(_runState) ??
+               (_runState.Players.Count == 1 ? GetOrderedPlayers().FirstOrDefault() : null);
+    }
+
+    internal static Player? GetPlayerByNetId(ulong netId)
+    {
+        return _runState?.Players.FirstOrDefault(player => player.NetId == netId);
+    }
+
+    internal static Player? GetPlayerForCreature(Creature? creature)
+    {
+        if (_runState == null || creature == null)
+            return null;
+
+        foreach (Player player in _runState.Players)
         {
             if (ReferenceEquals(player.Creature, creature) ||
                 ReferenceEquals(creature.PetOwner?.Creature, player.Creature))
@@ -128,303 +91,506 @@ public static class StatusSlotManager
         return null;
     }
 
+    internal static bool IsMizukiPlayer(Player player) => player.Character is Mizuki;
+
+    internal static bool IsPlayerEligibleForSlot(Player player, StatusSlotType type)
+    {
+        StatusSlotPlayerConfig config = StatusSlotRunData.GetConfig(player);
+        bool enabled = type switch
+        {
+            StatusSlotType.Revelation => config.RevelationEnabled,
+            StatusSlotType.Aberration => config.AberrationEnabled,
+            StatusSlotType.SwarmCall => config.SwarmCallEnabled,
+            _ => false
+        };
+        if (!enabled)
+            return false;
+
+        bool affectsOtherCharacters = type switch
+        {
+            StatusSlotType.Revelation => config.RevelationAffectsOtherCharacters,
+            StatusSlotType.Aberration => config.AberrationAffectsOtherCharacters,
+            StatusSlotType.SwarmCall => config.SwarmCallAffectsOtherCharacters,
+            _ => false
+        };
+        return IsMizukiPlayer(player) || affectsOtherCharacters;
+    }
+
+    internal static bool ShouldSlotAffectCreature(StatusSlotType type, Creature creature)
+    {
+        Player? player = GetPlayerForCreature(creature);
+        return player == null || IsPlayerEligibleForSlot(player, type);
+    }
+
+    internal static bool IsSlotEnabled(Player player, StatusSlotType type)
+        => IsPlayerEligibleForSlot(player, type);
+
     internal static bool IsSlotEnabled(StatusSlotType type)
     {
-        if (_data?.RunSettingsCaptured == true)
-            return _data.IsSlotEnabledForRun(type);
-
-        if (_runState != null)
-            return GetStatusSlotOwnerPlayer(type) != null;
-
-        return IsMechanismEnabled(type);
+        Player? localPlayer = GetLocalPlayer();
+        return localPlayer != null && IsSlotEnabled(localPlayer, type);
     }
 
     internal static bool IsSlotVisibleForLocalPlayer(StatusSlotType type)
     {
-        if (!IsSlotEnabled(type))
+        Player? localPlayer = GetLocalPlayer();
+        return localPlayer != null && IsSlotEnabled(localPlayer, type);
+    }
+
+    public static StatusSlotPlayerState GetState(Player player) => StatusSlotRunData.GetState(player);
+
+    internal static void CommitState(Player player, StatusSlotPlayerState state)
+    {
+        StatusSlotRunData.States.Set((RunState)player.RunState, player.NetId, state);
+    }
+
+    public static bool HasEffect(Player player, StatusSlotType type)
+    {
+        if (!IsSlotEnabled(player, type))
             return false;
 
-        var runState = _runState;
-        if (runState == null || runState.Players.Count == 0)
-            return IsMechanismEnabled(type);
-
-        var localPlayer = GetLocalPlayer(runState);
-        return localPlayer != null && IsPlayerEligibleForSlot(localPlayer, type);
+        StatusSlotPlayerState state = GetState(player);
+        return !string.IsNullOrEmpty(state.GetKey(type)) && state.GetCharges(type) > 0;
     }
 
-    private static Player? GetLocalPlayer(RunState runState)
+    public static bool HasEffect(StatusSlotType type)
     {
-        var localPlayer = LocalContext.GetMe(runState);
-        if (localPlayer != null)
-            return localPlayer;
-
-        return runState.Players.Count == 1
-            ? GetOrderedPlayers(runState).FirstOrDefault()
-            : null;
+        Player? localPlayer = GetLocalPlayer();
+        return localPlayer != null && HasEffect(localPlayer, type);
     }
 
-    private static bool IsMechanismEnabled(StatusSlotType type)
-    {
-        if (_data?.RunSettingsCaptured == true)
-            return _data.IsMechanismEnabledForRun(type);
-
-        return type switch
-        {
-            StatusSlotType.Revelation => StatusSlotSettings.IsRevelationEnabled,
-            StatusSlotType.Aberration => StatusSlotSettings.IsAberrationEnabled,
-            StatusSlotType.SwarmCall => StatusSlotSettings.IsSwarmCallEnabled,
-            _ => false
-        };
-    }
-
-    private static bool CanAffectOtherCharacters(StatusSlotType type)
-    {
-        if (_data?.RunSettingsCaptured == true)
-            return _data.CanAffectOtherCharactersForRun(type);
-
-        return type switch
-        {
-            StatusSlotType.Revelation => StatusSlotSettings.DoesRevelationAffectOtherCharacters,
-            StatusSlotType.Aberration => StatusSlotSettings.DoesAberrationAffectOtherCharacters,
-            StatusSlotType.SwarmCall => StatusSlotSettings.DoesSwarmCallAffectOtherCharacters,
-            _ => false
-        };
-    }
-
-    private static StatusSlotDataModifier GetDataModifier(RunState runState)
-    {
-        // 1. 优先从已挂载的 Modifiers 列表查找（读档场景）
-        var existing = runState.Modifiers.OfType<StatusSlotDataModifier>().LastOrDefault();
-        if (existing != null) return existing;
-
-        // 2. 新局：创建但不挂载（避免影响 Neow），只调用 OnRunLoaded 设置 _runState
-        var mod = (StatusSlotDataModifier)ModelDb.Modifier<StatusSlotDataModifier>().ToMutable();
-        mod.OnRunLoaded(runState);
-
-        Entry.Logger.Info("[StatusSlot] Created new StatusSlotDataModifier (not attached yet)");
-        return mod;
-    }
-
-    // ── 效果管理 ───────────────────────────────────
-
-    public static void AssignEffect(StatusSlotType slotType, string effectKey)
-        => AssignEffectAsync(slotType, effectKey).GetAwaiter().GetResult();
-
-    public static async Task AssignEffectAsync(StatusSlotType slotType, string effectKey)
-    {
-        if (_data == null)
-        {
-            Entry.Logger.Error("[StatusSlot] Cannot assign effect: data not initialized");
-            return;
-        }
-
-        var def = StatusSlotEffects.FindByKey(effectKey);
-        if (def == null || def.Slot != slotType)
-        {
-            Entry.Logger.Error($"[StatusSlot] Invalid effect '{effectKey}' for slot {slotType}");
-            return;
-        }
-
-        if (!_data.IsSlotEnabledForRun(slotType))
-        {
-            Entry.Logger.Info($"[StatusSlot] Ignored {effectKey}: {slotType} is disabled for this run");
-            _data.ClearSlot(slotType);
-            RefreshUI();
-            return;
-        }
-
-        _data.SetSlot(slotType, effectKey, def.DefaultCharges);
-        Entry.Logger.Info($"[StatusSlot] Assigned {effectKey} to {slotType}, charges={def.DefaultCharges}");
-
-        // ── 获得时的特殊效果 ─────────────────────────
-        await HandleOnAcquiredAsync(slotType, effectKey);
-        RefreshUI();
-    }
-
-    public static void RemoveEffect(StatusSlotType slotType)
-        => RemoveEffectAsync(slotType).GetAwaiter().GetResult();
-
-    public static async Task RemoveEffectAsync(StatusSlotType slotType)
-    {
-        if (_data == null) return;
-        var key = _data.GetKey(slotType);
-        _data.ClearSlot(slotType);
-        Entry.Logger.Info($"[StatusSlot] Removed effect from {slotType}");
-
-        // ── 失去时的特殊效果 ─────────────────────────
-        if (!string.IsNullOrEmpty(key))
-            await HandleOnRemovedAsync(slotType, key);
-        RefreshUI();
-    }
-
-    public static bool HasEffect(StatusSlotType slotType)
-        => _data != null && _data.HasEffect(slotType);
+    public static string GetEffectKey(Player player, StatusSlotType type) => GetState(player).GetKey(type);
+    public static int GetCharges(Player player, StatusSlotType type) => GetState(player).GetCharges(type);
 
     public static string GetEffectKey(StatusSlotType type)
-        => _data?.GetKey(type) ?? "";
+        => GetLocalPlayer() is { } player ? GetEffectKey(player, type) : "";
 
     public static int GetCharges(StatusSlotType type)
-        => _data?.GetCharges(type) ?? 0;
+        => GetLocalPlayer() is { } player ? GetCharges(player, type) : 0;
 
-    public static void DecrementCharges(StatusSlotType slotType)
-        => DecrementChargesAsync(slotType).GetAwaiter().GetResult();
+    public static void AssignEffect(Player player, StatusSlotType type, string effectKey)
+        => AssignEffectAsync(player, type, effectKey, new ThrowingPlayerChoiceContext()).GetAwaiter().GetResult();
 
-    public static async Task DecrementChargesAsync(StatusSlotType slotType)
+    public static async Task AssignEffectAsync(
+        Player player,
+        StatusSlotType type,
+        string effectKey,
+        PlayerChoiceContext? choiceContext = null)
     {
-        if (_data == null) return;
-        if (!_data.IsSlotEnabledForRun(slotType))
-        {
-            _data.ClearSlot(slotType);
-            RefreshUI();
+        var definition = StatusSlotEffects.FindByKey(effectKey);
+        if (definition == null || definition.Slot != type)
+            throw new ArgumentException($"Invalid effect '{effectKey}' for {type}.", nameof(effectKey));
+
+        if (!IsSlotEnabled(player, type))
             return;
-        }
 
-        var charges = _data.GetCharges(slotType);
-        if (charges <= 0) return;
-
-        charges--;
-        var key = _data.GetKey(slotType);
-        _data.SetSlot(slotType, key, charges);
-
-        Entry.Logger.Info($"[StatusSlot] {slotType} charges decremented to {charges}");
-
-        if (charges <= 0)
-        {
-            _data.ClearSlot(slotType);
-            Entry.Logger.Info($"[StatusSlot] {slotType} effect used up, cleared");
-            await HandleOnRemovedAsync(slotType, key);
-        }
+        StatusSlotPlayerState state = GetState(player);
+        state.SetSlot(type, effectKey, definition.DefaultCharges);
+        state.Revision++;
+        CommitState(player, state);
+        await HandleOnAcquiredAsync(player, type, effectKey, choiceContext ?? new ThrowingPlayerChoiceContext());
+        Entry.Logger.Info($"[StatusSlot] Player {player.NetId} assigned {effectKey} ({type})");
         RefreshUI();
     }
 
-    // ── UI 刷新 ────────────────────────────────────
+    public static void RemoveEffect(Player player, StatusSlotType type)
+        => RemoveEffectAsync(player, type, new ThrowingPlayerChoiceContext()).GetAwaiter().GetResult();
+
+    public static async Task RemoveEffectAsync(
+        Player player,
+        StatusSlotType type,
+        PlayerChoiceContext? choiceContext = null)
+    {
+        StatusSlotPlayerState state = GetState(player);
+        string key = state.GetKey(type);
+        if (string.IsNullOrEmpty(key) && state.GetCharges(type) <= 0)
+            return;
+
+        state.ClearSlot(type);
+        state.Revision++;
+        CommitState(player, state);
+        await HandleOnRemovedAsync(player, type, key, choiceContext ?? new ThrowingPlayerChoiceContext());
+        Entry.Logger.Info($"[StatusSlot] Player {player.NetId} removed {type}");
+        RefreshUI();
+    }
+
+    internal static async Task DecrementAfterCombatAsync(
+        Player player,
+        StatusSlotType type,
+        PlayerChoiceContext? choiceContext = null)
+    {
+        StatusSlotPlayerState state = GetState(player);
+        int charges = state.GetCharges(type);
+        string key = state.GetKey(type);
+        if (charges <= 0 || string.IsNullOrEmpty(key))
+            return;
+
+        charges--;
+        if (charges <= 0)
+        {
+            await RemoveEffectAsync(player, type, choiceContext);
+            return;
+        }
+
+        state.SetSlot(type, key, charges);
+        state.Revision++;
+        CommitState(player, state);
+    }
+
+    internal static StatusSlotRoomAction BuildRoomAction(AbstractRoom room)
+        => BuildRoomAction(room.RoomType);
+
+    internal static StatusSlotRoomAction BuildRoomAction(RoomType roomType)
+    {
+        if (_runState == null)
+            throw new InvalidOperationException("StatusSlot run data is not initialized.");
+
+        var action = new StatusSlotRoomAction
+        {
+            ActIndex = _runState.CurrentActIndex,
+            RoomCount = _runState.CurrentRoomCount,
+            RoomType = (int)roomType
+        };
+
+        foreach (Player player in GetOrderedPlayers())
+        {
+            StatusSlotPlayerState state = GetState(player);
+            StatusSlotPlayerConfig config = StatusSlotRunData.GetConfig(player);
+            bool actChanged = state.LastActIndex != action.ActIndex;
+            var playerAction = new StatusSlotRoomPlayerAction
+            {
+                PlayerNetId = player.NetId,
+                ActChanged = actChanged
+            };
+
+            if (actChanged)
+            {
+                if (IsSlotEnabled(player, StatusSlotType.SwarmCall) &&
+                    RollChance(player, $"swarm.roll.act.{action.ActIndex}", config.SwarmCallChance))
+                {
+                    playerAction.NewSwarmCallKey = PickEffect(
+                        player,
+                        StatusSlotType.SwarmCall,
+                        $"swarm.pick.act.{action.ActIndex}",
+                        randomOnly: true);
+                }
+
+                if (!HasEffect(player, StatusSlotType.Revelation) &&
+                    IsSlotEnabled(player, StatusSlotType.Revelation) &&
+                    RollChance(player, $"revelation.roll.act.{action.ActIndex}", config.RevelationChance))
+                {
+                    playerAction.NewRevelationKey = PickEffect(
+                        player,
+                        StatusSlotType.Revelation,
+                        $"revelation.pick.act.{action.ActIndex}");
+                }
+            }
+
+            action.Players.Add(playerAction);
+        }
+
+        return action;
+    }
+
+    internal static StatusSlotAberrationAction BuildAberrationAction()
+    {
+        if (_runState == null)
+            throw new InvalidOperationException("StatusSlot run data is not initialized.");
+
+        var action = new StatusSlotAberrationAction { RoomCount = _runState.CurrentRoomCount };
+        foreach (Player player in GetOrderedPlayers())
+        {
+            StatusSlotPlayerState state = GetState(player);
+            StatusSlotPlayerConfig config = StatusSlotRunData.GetConfig(player);
+            if (state.LastAberrationCombatRoomCount >= action.RoomCount ||
+                !IsSlotEnabled(player, StatusSlotType.Aberration) ||
+                HasEffect(player, StatusSlotType.Aberration) ||
+                state.DamageTakenThisCombat < config.AberrationHpThreshold ||
+                !RollChance(player, $"aberration.roll.room.{action.RoomCount}", config.AberrationChance))
+            {
+                continue;
+            }
+
+            action.Players.Add(new StatusSlotAberrationPlayerAction
+            {
+                PlayerNetId = player.NetId,
+                EffectKey = PickEffect(
+                    player,
+                    StatusSlotType.Aberration,
+                    $"aberration.pick.room.{action.RoomCount}")
+            });
+        }
+
+        return action;
+    }
+
+    internal static async Task ApplyRoomActionAsync(
+        StatusSlotRoomAction action,
+        PlayerChoiceContext choiceContext)
+    {
+        foreach (StatusSlotRoomPlayerAction playerAction in action.Players)
+        {
+            Player? player = GetPlayerByNetId(playerAction.PlayerNetId);
+            if (player == null)
+                continue;
+
+            StatusSlotPlayerState state = GetState(player);
+            if (state.LastProcessedRoomCount >= action.RoomCount)
+                continue;
+
+            if (playerAction.ActChanged && state.LastActIndex != action.ActIndex)
+            {
+                await RemoveSwarmCallForActChangeAsync(player, choiceContext);
+                if (!string.IsNullOrEmpty(playerAction.NewSwarmCallKey))
+                    await AssignEffectAsync(player, StatusSlotType.SwarmCall, playerAction.NewSwarmCallKey, choiceContext);
+                if (!string.IsNullOrEmpty(playerAction.NewRevelationKey))
+                    await AssignEffectAsync(player, StatusSlotType.Revelation, playerAction.NewRevelationKey, choiceContext);
+
+                state = GetState(player);
+                state.LastActIndex = action.ActIndex;
+            }
+
+            await ApplyRoomEnteredEffectsAsync(player, (RoomType)action.RoomType, choiceContext);
+            state = GetState(player);
+            state.LastProcessedRoomCount = action.RoomCount;
+            state.Revision++;
+            CommitState(player, state);
+            Entry.Logger.Info(
+                $"[StatusSlot][Sync] room={action.RoomCount} player={player.NetId} " +
+                $"rev={state.RevelationKey}/{state.RevelationCharges} " +
+                $"aber={state.AberrationKey}/{state.AberrationCharges} " +
+                $"swarm={state.SwarmCallKey}/{state.SwarmCallCharges} revision={state.Revision}");
+        }
+
+        RefreshUI();
+    }
+
+    internal static async Task ApplyAberrationActionAsync(
+        StatusSlotAberrationAction action,
+        PlayerChoiceContext choiceContext)
+    {
+        var effectByPlayer = action.Players.ToDictionary(x => x.PlayerNetId);
+        foreach (Player player in GetOrderedPlayers())
+        {
+            StatusSlotPlayerState state = GetState(player);
+            if (state.LastAberrationCombatRoomCount >= action.RoomCount)
+                continue;
+
+            state.LastAberrationCombatRoomCount = action.RoomCount;
+            state.Revision++;
+            CommitState(player, state);
+
+            if (effectByPlayer.TryGetValue(player.NetId, out var playerAction) &&
+                !string.IsNullOrEmpty(playerAction.EffectKey))
+            {
+                await AssignEffectAsync(
+                    player,
+                    StatusSlotType.Aberration,
+                    playerAction.EffectKey,
+                    choiceContext);
+            }
+
+            Entry.Logger.Info(
+                $"[StatusSlot][Sync] combatRoom={action.RoomCount} player={player.NetId} " +
+                $"aberration={GetState(player).AberrationKey} revision={GetState(player).Revision}");
+        }
+
+        RefreshUI();
+    }
 
     public static void RefreshUI()
     {
-        if (_data == null) return;
+        Player? player = GetLocalPlayer();
+        if (player == null)
+            return;
 
+        StatusSlotPlayerState state = GetState(player);
+        StatusSlotPlayerConfig config = StatusSlotRunData.GetConfig(player);
         for (int i = 0; i < 3; i++)
         {
-            var slotType = (StatusSlotType)i;
-            var key = _data.GetKey(slotType);
-            var charges = _data.GetCharges(slotType);
-            var enabled = _data.IsSlotEnabledForRun(slotType);
-            var visible = IsSlotVisibleForLocalPlayer(slotType);
+            var type = (StatusSlotType)i;
+            bool visible = IsSlotEnabled(player, type);
             StatusSlotFrame.SetSlotVisible(i, visible);
+            string key = state.GetKey(type);
+            int charges = state.GetCharges(type);
 
-            if (!visible)
+            if (!visible || string.IsNullOrEmpty(key) || charges <= 0)
             {
-                StatusSlotFrame.SetContent(i, (string?)null,
-                    StatusSlotI18n.GetSlotName(slotType),
-                    StatusSlotI18n.GetSlotEmpty(slotType));
+                string emptyDescription = type == StatusSlotType.Aberration
+                    ? $"单场战斗失去 {config.AberrationHpThreshold} 点以上生命值时，有 {config.AberrationChance / 100}% 概率获得一个随机的排异反应。"
+                    : StatusSlotI18n.GetSlotEmpty(type);
+                StatusSlotFrame.SetContent(
+                    i,
+                    (string?)null,
+                    StatusSlotI18n.GetSlotName(type),
+                    emptyDescription);
+                continue;
             }
-            else if (!enabled)
+
+            var definition = StatusSlotEffects.FindByKey(key);
+            if (definition == null)
+                continue;
+
+            string description = StatusSlotI18n.GetEffectDesc(key);
+            if (type != StatusSlotType.SwarmCall && charges < 999)
             {
-                StatusSlotFrame.SetContent(i, (string?)null,
-                    StatusSlotI18n.GetSlotName(slotType),
-                    StatusSlotI18n.GetSlotEmpty(slotType));
+                description += charges == 1
+                    ? " \n（在本场战斗后清除）"
+                    : $" \n（{charges} 场战斗后移除）";
             }
-            else if (!string.IsNullOrEmpty(key) && charges > 0)
-            {
-                var def = StatusSlotEffects.FindByKey(key);
-                if (def != null)
-                {
-                    string name = StatusSlotI18n.GetEffectName(key);
-                    string desc = StatusSlotI18n.GetEffectDesc(key);
-                    if (slotType != StatusSlotType.SwarmCall && charges < 999)
-                    {
-                        if (charges == 1)
-                            desc += " \n（在本场战斗后清除）";
-                        else
-                            desc += $" \n（{charges} 场战斗后移除）";
-                    }
-                    StatusSlotFrame.SetContent(i, def.IconPath, name, desc);
-                }
-            }
-            else
-            {
-                string emptyDesc;
-                if (slotType == StatusSlotType.Aberration)
-                {
-                    int hp = _data.AberrationHpThresholdForRun;
-                    int pct = (int)Math.Round(_data.AberrationChanceForRun / 100.0);
-                    emptyDesc = $"单场战斗失去 {hp} 点以上生命值时，有 {pct}% 概率获得一个随机的排异反应。";
-                }
-                else
-                {
-                    emptyDesc = StatusSlotI18n.GetSlotEmpty(slotType);
-                }
-                StatusSlotFrame.SetContent(i, (string?)null,
-                    StatusSlotI18n.GetSlotName(slotType),
-                    emptyDesc);
-            }
+            StatusSlotFrame.SetContent(
+                i,
+                definition.IconPath,
+                StatusSlotI18n.GetEffectName(key),
+                description);
         }
     }
 
-    // ── 获得/失去时的特殊效果 ────────────────────────
-
-    private static async Task HandleOnAcquiredAsync(StatusSlotType slotType, string effectKey)
+    private static async Task RemoveSwarmCallForActChangeAsync(
+        Player player,
+        PlayerChoiceContext choiceContext)
     {
-        var player = GetStatusSlotOwnerPlayer(slotType);
-        if (player == null) return;
+        StatusSlotPlayerState state = GetState(player);
+        if (state.SwarmCallKey == "echo_modification")
+        {
+            int goldToRemove = Math.Min(player.Gold, Math.Max(0, state.EchoModificationGoldGained));
+            if (goldToRemove > 0)
+                await PlayerCmd.LoseGold(goldToRemove, player, GoldLossType.Spent);
+        }
 
+        await RemoveEffectAsync(player, StatusSlotType.SwarmCall, choiceContext);
+    }
+
+    private static async Task ApplyRoomEnteredEffectsAsync(
+        Player player,
+        RoomType roomType,
+        PlayerChoiceContext choiceContext)
+    {
+        if (HasEffect(player, StatusSlotType.SwarmCall) &&
+            GetEffectKey(player, StatusSlotType.SwarmCall) == "echo_modification" &&
+            !IsCombatRoom(roomType))
+        {
+            await PlayerCmd.GainGold(25m, player);
+        }
+
+        if (HasEffect(player, StatusSlotType.SwarmCall) &&
+            GetEffectKey(player, StatusSlotType.SwarmCall) == "echo_wither" &&
+            IsCombatRoom(roomType))
+        {
+            await CreatureCmd.Damage(
+                choiceContext,
+                player.Creature,
+                2,
+                ValueProp.Unblockable,
+                null,
+                null);
+        }
+    }
+
+    private static async Task HandleOnAcquiredAsync(
+        Player player,
+        StatusSlotType type,
+        string effectKey,
+        PlayerChoiceContext choiceContext)
+    {
+        StatusSlotPlayerState state = GetState(player);
         switch (effectKey)
         {
             case "sargon_generosity":
-                // 萨尔贡的慷慨：随机获得 2 个遗物
-                Entry.Logger.Info("[StatusSlot] sargon_generosity: granting 2 random relics");
-                RelicModel relic = RelicFactory.PullNextRelicFromFront(player!).ToMutable();
-                await RelicCmd.Obtain(relic, player!);
-                RelicModel relic2 = RelicFactory.PullNextRelicFromFront(player!).ToMutable();
-                await RelicCmd.Obtain(relic2, player!);
+                await RelicCmd.Obtain(RelicFactory.PullNextRelicFromFront(player).ToMutable(), player);
+                await RelicCmd.Obtain(RelicFactory.PullNextRelicFromFront(player).ToMutable(), player);
                 break;
-
             case "flesh_distortion":
-                // 血肉畸变：失去 50% 最大生命
-                var maxHp = player.Creature.MaxHp;
-                var lost = maxHp / 2;
-                _data!.FleshDistortionLostHp = lost;
-                Entry.Logger.Info($"[StatusSlot] flesh_distortion: lose {lost} MaxHp (was {maxHp})");
+                state.FleshDistortionLostHp = player.Creature.MaxHp / 2;
+                CommitState(player, state);
                 await CreatureCmd.LoseMaxHp(
-                    new ThrowingPlayerChoiceContext(),
-                    player.Creature, lost, isFromCard: false);
+                    choiceContext,
+                    player.Creature,
+                    state.FleshDistortionLostHp,
+                    isFromCard: false);
                 break;
-
             case "echo_modification":
-                // 记录获取时的金币量
-                _data!.EchoModificationGoldOnAcquire = player.Gold;
-                _data!.EchoModificationGoldGained = 0;
-                Entry.Logger.Info($"[StatusSlot] echo_modification: recorded GoldOnAcquire={player.Gold}");
+                state.EchoModificationGoldOnAcquire = player.Gold;
+                state.EchoModificationGoldGained = 0;
+                CommitState(player, state);
                 break;
-
             case "columbia_innovation":
-                // 哥伦比亚的创想：标记下次战斗给稀有卡牌
-                _data!.ColumbiaPendingReward = true;
-                Entry.Logger.Info("[StatusSlot] columbia_innovation: pending rare card reward");
+                state.ColumbiaPendingReward = true;
+                CommitState(player, state);
                 break;
         }
     }
 
-    private static async Task HandleOnRemovedAsync(StatusSlotType slotType, string effectKey)
+    private static async Task HandleOnRemovedAsync(
+        Player player,
+        StatusSlotType type,
+        string effectKey,
+        PlayerChoiceContext choiceContext)
     {
-        var player = GetStatusSlotOwnerPlayer(slotType);
-        if (player == null) return;
+        if (effectKey != "flesh_distortion")
+            return;
 
-        switch (effectKey)
-        {
-            case "flesh_distortion":
-                // 血肉畸变：恢复失去的最大生命
-                var lost = _data?.FleshDistortionLostHp ?? 0;
-                if (lost > 0)
-                {
-                    Entry.Logger.Info($"[StatusSlot] flesh_distortion: restore {lost} MaxHp");
-                    await CreatureCmd.GainMaxHp(player.Creature, lost);
-                    if (_data != null) _data.FleshDistortionLostHp = 0;
-                }
-                break;
+        StatusSlotPlayerState state = GetState(player);
+        int lostHp = state.FleshDistortionLostHp;
+        if (lostHp <= 0)
+            return;
 
-            case "echo_modification":
-                break;
-        }
+        state.FleshDistortionLostHp = 0;
+        CommitState(player, state);
+        await CreatureCmd.GainMaxHp(player.Creature, lostHp);
+    }
+
+    private static bool RollChance(Player player, string streamId, int chanceBasisPoints)
+    {
+        if (chanceBasisPoints <= 0)
+            return false;
+        if (chanceBasisPoints >= 10000)
+            return true;
+        return AuthorityRandom(player, streamId, 10000) < chanceBasisPoints;
+    }
+
+    private static string PickEffect(
+        Player player,
+        StatusSlotType type,
+        string streamId,
+        bool randomOnly = false)
+    {
+        var effects = StatusSlotEffects.GetForSlot(type);
+        if (randomOnly)
+            effects = effects.Where(effect => effect.IsRandomObtainable).ToList();
+        if (effects.Count == 0)
+            return "";
+        return effects[AuthorityRandom(player, streamId, effects.Count)].Key;
+    }
+
+    private static int AuthorityRandom(Player player, string streamId, int exclusiveMax)
+    {
+        if (exclusiveMax <= 0)
+            throw new ArgumentOutOfRangeException(nameof(exclusiveMax));
+
+        RunState runState = _runState ?? (RunState)player.RunState;
+        string runSeed = runState.Rng.StringSeed;
+        if (string.IsNullOrEmpty(runSeed))
+            runSeed = runState.Rng.Seed.ToString("X16");
+
+        int slotIndex = runState.GetPlayerSlotIndex(player);
+        byte[] input = Encoding.UTF8.GetBytes($"{runSeed}|{slotIndex}|{Entry.ModId}|{streamId}");
+        Span<byte> digest = stackalloc byte[32];
+        SHA256.HashData(input, digest);
+        return (int)(BinaryPrimitives.ReadUInt32LittleEndian(digest) % (uint)exclusiveMax);
+    }
+
+    private static bool IsCombatRoom(RoomType roomType)
+        => roomType is RoomType.Monster or RoomType.Elite or RoomType.Boss;
+
+    private static StatusSlotDataModifier GetOrCreateHookModifier(RunState runState)
+    {
+        var existing = runState.Modifiers.OfType<StatusSlotDataModifier>().LastOrDefault();
+        if (existing != null)
+            return existing;
+
+        var modifier = (StatusSlotDataModifier)ModelDb.Modifier<StatusSlotDataModifier>().ToMutable();
+        modifier.OnRunLoaded(runState);
+        return modifier;
     }
 }

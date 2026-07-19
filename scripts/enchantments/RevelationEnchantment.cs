@@ -10,6 +10,7 @@ using MegaCrit.Sts2.Core.Factories;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
+using MegaCrit.Sts2.Core.Saves.Runs;
 
 namespace Arknights_Mizuki.Scripts.Enchantments;
 
@@ -18,7 +19,8 @@ namespace Arknights_Mizuki.Scripts.Enchantments;
 public sealed class RevelationEnchantment : ModEnchantmentTemplate
 {
 
-    private bool used=false;
+    [SavedProperty]
+    public bool Used { get; set; }
     protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[]
     {
         new CardsVar(2),
@@ -38,10 +40,11 @@ HoverTipFactory.FromPower<SanityBurstDescriptionPower>()
 
     public override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay? cardPlay)
     {
-        if (!StatusSlotManager.IsSlotEnabled(StatusSlotType.Revelation))
+        if (!StatusSlotManager.IsSlotEnabled(Card.Owner, StatusSlotType.Revelation))
             return;
 
-        if(used)return;
+        if (Used)
+            return;
         int roll = Card.Owner.RunState.Rng.Niche.NextInt(10);
         if (roll < 3)
         {
@@ -58,7 +61,11 @@ HoverTipFactory.FromPower<SanityBurstDescriptionPower>()
         if (roll < 9)
         {
 
-            Creature target = Card.Owner.RunState.Rng.CombatTargets.NextItem(Card.CombatState.HittableEnemies);
+            IReadOnlyList<Creature> targets = Card.CombatState.HittableEnemies;
+            if (targets.Count == 0)
+                return;
+
+            Creature target = Card.Owner.RunState.Rng.CombatTargets.NextItem(targets);
             await PowerCmd.Apply<SanityPower>(
                 choiceContext,
                 target,
@@ -69,6 +76,6 @@ HoverTipFactory.FromPower<SanityBurstDescriptionPower>()
         }
         
         await RelicCmd.Obtain(RelicFactory.PullNextRelicFromFront(Card.Owner).ToMutable(), Card.Owner);
-        used = true;
+        Used = true;
     }
 }

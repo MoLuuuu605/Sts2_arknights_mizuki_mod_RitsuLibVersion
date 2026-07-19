@@ -1,13 +1,10 @@
 {
   "local_sanity.description": "同量の神経損傷を与える。",
   "local_sanity.title": "神経損傷",
-
   "ARKNIGHTS_MIZUKI_TOPBARBUTTON_REVELATION_SLOT.title": "啓示",
-  "ARKNIGHTS_MIZUKI_TOPBARBUTTON_REVELATION_SLOT.description": "現在の啓示効果がここに表示されます。",
-
+  "ARKNIGHTS_MIZUKI_TOPBARBUTTON_REVELATION_SLOT.description": "現在の啓示がここに表示される。",
   "ARKNIGHTS_MIZUKI_TOPBARBUTTON_ABERRATION_SLOT.title": "排異反応",
-  "ARKNIGHTS_MIZUKI_TOPBARBUTTON_ABERRATION_SLOT.description": "現在の排異反応効果がここに表示されます。",
-
+  "ARKNIGHTS_MIZUKI_TOPBARBUTTON_ABERRATION_SLOT.description": "現在の排異反応がここに表示される。",
   "ARKNIGHTS_MIZUKI_TOPBARBUTTON_SWARM_CALL_SLOT.title": "残響",
-  "ARKNIGHTS_MIZUKI_TOPBARBUTTON_SWARM_CALL_SLOT.description": "現在の残響効果がここに表示されます。"
+  "ARKNIGHTS_MIZUKI_TOPBARBUTTON_SWARM_CALL_SLOT.description": "現在の残響がここに表示される。"
 }

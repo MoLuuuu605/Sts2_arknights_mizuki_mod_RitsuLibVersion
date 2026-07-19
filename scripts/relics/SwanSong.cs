@@ -35,7 +35,7 @@ public sealed class SwanSong : ModRelicTemplate
 
     public override async Task AfterObtained()
     {
-        if (!StatusSlotManager.IsSlotEnabled(StatusSlotType.Revelation))
+        if (!StatusSlotManager.IsSlotEnabled(Owner, StatusSlotType.Revelation))
             return;
 
         RevelationEnchantment enchantment = ModelDb.Enchantment<RevelationEnchantment>();

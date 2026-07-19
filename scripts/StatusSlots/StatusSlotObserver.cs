@@ -1,13 +1,13 @@
 using MegaCrit.Sts2.Core.Map;
 using MegaCrit.Sts2.Core.Runs;
 using STS2RitsuLib;
+using STS2RitsuLib.RunData;
 
 namespace Arknights_Mizuki.Scripts.StatusSlots;
 
 /// <summary>
-/// 状态栏位事件观察者。Singleton，实现 ILifecycleObserver。
-/// 处理非战斗事件：开局/读档初始化、房间进入。
-/// 战斗内事件由 StatusSlotDataModifier 的 override 方法处理。
+/// 状态栏位事件观察者。处理大厅配置贡献、跑局数据初始化和房间 UI 生命周期。
+/// 战斗钩子由 StatusSlotDataModifier 承载，持久状态由 RitsuLib 按玩家跑局数据保存。
 /// </summary>
 public sealed class StatusSlotObserver : ILifecycleObserver
 {
@@ -33,6 +33,15 @@ public sealed class StatusSlotObserver : ILifecycleObserver
                 case RoomEnteredEvent e:
                     OnRoomEntered(e);
                     break;
+                case RoomExitedEvent e:
+                    OnRoomExited(e);
+                    break;
+                case RunSavedDataLobbyStagingEvent e:
+                    StatusSlotRunData.StageLocalConfig(e);
+                    break;
+                case RunSavedDataPreparingEvent e:
+                    StatusSlotRunData.PrepareRunData(e);
+                    break;
             }
         }
         catch (System.Exception ex)
@@ -52,6 +61,8 @@ public sealed class StatusSlotObserver : ILifecycleObserver
     {
         Entry.Logger.Info("[StatusSlot] RunLoaded, restoring data");
         StatusSlotManager.EnsureData(evt.RunState);
+        if (evt.RunState.CurrentMapPoint is { PointType: not MapPointType.Ancient })
+            StatusSlotManager.AttachModifier(evt.RunState);
         StatusSlotFrame.EnsureButtons();
         StatusSlotManager.RefreshUI();
     }
@@ -61,9 +72,8 @@ public sealed class StatusSlotObserver : ILifecycleObserver
         if (evt.RunState is not RunState runState)
             return;
 
-        // ── 延迟挂载 Modifier ──
-        // 新局开始时 StatusSlotDataModifier 只创建未挂载（避免影响 Neow 选项生成）。
-        // 进入非 Ancient 房间时才挂到 RunState.Modifiers，让存档系统接管。
+        // Fallback for legacy or externally constructed runs. Normal runs attach at
+        // RunStarted/RunLoaded so the first combat's hook snapshot includes this modifier.
         var currentMapPoint = runState.CurrentMapPoint;
         if (currentMapPoint != null && currentMapPoint.PointType != MapPointType.Ancient)
         {
@@ -77,5 +87,15 @@ public sealed class StatusSlotObserver : ILifecycleObserver
         StatusSlotFrame.EnsureButtons();
         StatusSlotPatches.HideDataModifierBadge();
         StatusSlotManager.RefreshUI();
+    }
+
+    private void OnRoomExited(RoomExitedEvent evt)
+    {
+        RunState? runState = StatusSlotManager.GetRunState();
+        if (runState == null)
+            return;
+
+        StatusSlotManager.EnsureData(runState);
+        StatusSlotManager.AttachModifier(runState);
     }
 }
