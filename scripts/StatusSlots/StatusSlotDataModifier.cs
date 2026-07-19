@@ -1,11 +1,12 @@
 using Arknights_Mizuki.Scripts.Powers;
+using HarmonyLib;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
-using MegaCrit.Sts2.Core.Map;
+using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.Models.Relics;
@@ -15,6 +16,8 @@ using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Arknights_Mizuki.Scripts.StatusSlots;
 
@@ -24,7 +27,9 @@ namespace Arknights_Mizuki.Scripts.StatusSlots;
 /// </summary>
 public sealed class StatusSlotDataModifier : ModifierModel
 {
-    private static readonly HashSet<ulong> EchoWitherBonusInProgress = new();
+    private static readonly PropertyInfo? GoldRewardAmountProperty =
+        typeof(GoldReward).GetProperty(nameof(GoldReward.Amount), BindingFlags.Instance | BindingFlags.Public);
+    private static readonly ConditionalWeakTable<GoldReward, EchoWitherGoldDisplay> EchoWitherGoldDisplays = new();
 
     // Legacy fields are retained so saves from the former shared-state implementation
     // can be loaded and migrated once into the per-player run-data slots.
@@ -90,7 +95,7 @@ public sealed class StatusSlotDataModifier : ModifierModel
             state.SetSlot(type, key, charges);
 
         state.LastActIndex = LastActIndex;
-        state.LastProcessedRoomCount = runState.CurrentRoomCount;
+        state.LastProcessedRoomCount = runState.TotalFloor;
         switch (type)
         {
             case StatusSlotType.Revelation:
@@ -115,27 +120,10 @@ public sealed class StatusSlotDataModifier : ModifierModel
     {
         await base.AfterRoomEntered(room);
         RunState? runState = StatusSlotManager.GetRunState();
-        if (runState == null || runState.CurrentRoomCount <= 0 ||
-            runState.CurrentMapPoint?.PointType == MapPointType.Ancient)
-        {
+        if (runState == null)
             return;
-        }
 
-        try
-        {
-            // Nested queue actions can cross PreCombatSetup/PlayPhase differently per peer.
-            // Run data and AuthorityRandom inputs are synchronized, so settle inline on every peer.
-            StatusSlotRoomAction action = StatusSlotManager.BuildRoomAction(room);
-            await StatusSlotManager.ApplyRoomActionAsync(action, new ThrowingPlayerChoiceContext());
-        }
-        catch (Exception ex)
-        {
-            Entry.Logger.Error($"[StatusSlot] Room settlement failed; continuing room entry: {ex}");
-        }
-        finally
-        {
-            StatusSlotManager.RefreshUI();
-        }
+        await StatusSlotManager.SettleRoomEnteredAsync(runState, room);
     }
 
     public override async Task BeforeCombatStart()
@@ -276,33 +264,6 @@ public sealed class StatusSlotDataModifier : ModifierModel
         StatusSlotManager.RefreshUI();
     }
 
-    public override async Task AfterModifyingGoldGained(Player player, decimal amount)
-    {
-        await base.AfterModifyingGoldGained(player, amount);
-        if (amount <= 0)
-            return;
-
-        if (Has(player, StatusSlotType.SwarmCall, "echo_wither") &&
-            EchoWitherBonusInProgress.Add(player.NetId))
-        {
-            try
-            {
-                await PlayerCmd.GainGold(amount, player);
-            }
-            finally
-            {
-                EchoWitherBonusInProgress.Remove(player.NetId);
-            }
-        }
-
-        if (Has(player, StatusSlotType.SwarmCall, "echo_modification"))
-        {
-            StatusSlotPlayerState state = StatusSlotManager.GetState(player);
-            state.EchoModificationGoldGained += (int)amount;
-            StatusSlotManager.CommitState(player, state);
-        }
-    }
-
     public override bool TryModifyRewards(Player player, List<Reward> rewards, AbstractRoom? room)
     {
         if (room == null || !IsCombatRoom(room.RoomType))
@@ -310,6 +271,27 @@ public sealed class StatusSlotDataModifier : ModifierModel
 
         bool modified = false;
         StatusSlotPlayerState state = StatusSlotManager.GetState(player);
+        if (Has(player, StatusSlotType.SwarmCall, "echo_wither") && GoldRewardAmountProperty != null)
+        {
+            foreach (GoldReward goldReward in rewards.OfType<GoldReward>())
+            {
+                if (EchoWitherGoldDisplays.TryGetValue(goldReward, out _))
+                    continue;
+
+                int originalAmount = goldReward.Amount;
+                if (originalAmount <= 0)
+                    continue;
+
+                int doubledAmount = (int)Math.Min(int.MaxValue, (long)originalAmount * 2L);
+                EchoWitherGoldDisplays.Add(goldReward, new EchoWitherGoldDisplay(originalAmount));
+                GoldRewardAmountProperty.SetValue(goldReward, doubledAmount);
+                Entry.Logger.Info(
+                    $"[StatusSlot][EchoWither] doubled combat gold player={player.NetId} " +
+                    $"from={originalAmount} to={doubledAmount}");
+                modified = true;
+            }
+        }
+
         if (state.ColumbiaPendingReward)
         {
             rewards.Add(new CardReward(CardCreationOptions.ForRoom(player, RoomType.Boss), 3, player));
@@ -340,4 +322,32 @@ public sealed class StatusSlotDataModifier : ModifierModel
     private static bool IsCombatRoom(RoomType roomType)
         => roomType is RoomType.Monster or RoomType.Elite or RoomType.Boss;
 
+    internal static bool TryGetEchoWitherOriginalGold(GoldReward reward, out int originalAmount)
+    {
+        if (EchoWitherGoldDisplays.TryGetValue(reward, out EchoWitherGoldDisplay? display))
+        {
+            originalAmount = display.OriginalAmount;
+            return true;
+        }
+
+        originalAmount = 0;
+        return false;
+    }
+
+    private sealed record EchoWitherGoldDisplay(int OriginalAmount);
+
+}
+
+[HarmonyPatch(typeof(GoldReward), nameof(GoldReward.Description), MethodType.Getter)]
+public static class EchoWitherGoldRewardDescriptionPatch
+{
+    private static void Postfix(GoldReward __instance, ref LocString __result)
+    {
+        if (!StatusSlotDataModifier.TryGetEchoWitherOriginalGold(__instance, out int originalAmount))
+            return;
+
+        var description = new LocString(__result.LocTable, __result.LocEntryKey);
+        description.Add("gold", $"{__instance.Amount} ({originalAmount}x2)");
+        __result = description;
+    }
 }

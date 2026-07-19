@@ -59,6 +59,7 @@ public sealed class StatusSlotPlayerState
 
     public int LastActIndex { get; set; } = -1;
     public int LastProcessedRoomCount { get; set; } = -1;
+    public int LastEchoModificationRoomCount { get; set; } = -1;
     public int LastAberrationCombatRoomCount { get; set; } = -1;
     public int Revision { get; set; }
 

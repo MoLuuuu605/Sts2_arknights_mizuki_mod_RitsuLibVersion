@@ -7,7 +7,6 @@ using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Factories;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
-using MegaCrit.Sts2.Core.Random;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.ValueProps;
@@ -248,7 +247,7 @@ public static class StatusSlotManager
         var action = new StatusSlotRoomAction
         {
             ActIndex = _runState.CurrentActIndex,
-            RoomCount = _runState.CurrentRoomCount,
+            RoomCount = _runState.TotalFloor,
             RoomType = (int)roomType
         };
 
@@ -297,7 +296,7 @@ public static class StatusSlotManager
         if (_runState == null)
             throw new InvalidOperationException("StatusSlot run data is not initialized.");
 
-        var action = new StatusSlotAberrationAction { RoomCount = _runState.CurrentRoomCount };
+        var action = new StatusSlotAberrationAction { RoomCount = _runState.TotalFloor };
         foreach (Player player in GetOrderedPlayers())
         {
             StatusSlotPlayerState state = GetState(player);
@@ -363,6 +362,92 @@ public static class StatusSlotManager
         }
 
         RefreshUI();
+    }
+
+    internal static async Task SettleRoomEnteredAsync(RunState runState, AbstractRoom room)
+    {
+        if (runState.TotalFloor <= 0 ||
+            runState.CurrentMapPoint?.PointType == MegaCrit.Sts2.Core.Map.MapPointType.Ancient)
+        {
+            return;
+        }
+
+        try
+        {
+            StatusSlotRoomAction action = BuildRoomAction(room);
+            await ApplyRoomActionAsync(action, new ThrowingPlayerChoiceContext());
+        }
+        catch (Exception ex)
+        {
+            Entry.Logger.Error($"[StatusSlot] Room settlement failed; continuing room entry: {ex}");
+        }
+        finally
+        {
+            RefreshUI();
+        }
+    }
+
+    internal static async Task SettleActEnteredAsync(RunState runState, int currentActIndex)
+    {
+        foreach (Player player in GetOrderedPlayers())
+        {
+            StatusSlotPlayerState state = GetState(player);
+            if (state.LastActIndex == currentActIndex || string.IsNullOrEmpty(state.SwarmCallKey))
+                continue;
+
+            Entry.Logger.Info(
+                $"[StatusSlot][ActEntered] clearing player={player.NetId} act={currentActIndex} " +
+                $"echo={state.SwarmCallKey} goldBaseline={state.EchoModificationGoldOnAcquire} " +
+                $"currentGold={player.Gold}");
+            await RemoveSwarmCallForActChangeAsync(player, new ThrowingPlayerChoiceContext());
+        }
+    }
+
+    internal static async Task SettleEchoModificationRoomEnteredAsync(RunState runState, AbstractRoom room)
+    {
+        int floor = runState.TotalFloor;
+        if (floor <= 0 ||
+            runState.CurrentMapPoint?.PointType == MegaCrit.Sts2.Core.Map.MapPointType.Ancient ||
+            IsCombatRoom(room.RoomType))
+        {
+            return;
+        }
+
+        foreach (Player player in GetOrderedPlayers())
+        {
+            if (!HasEffect(player, StatusSlotType.SwarmCall) ||
+                GetEffectKey(player, StatusSlotType.SwarmCall) != "echo_modification")
+            {
+                continue;
+            }
+
+            StatusSlotPlayerState state = GetState(player);
+            if (state.LastEchoModificationRoomCount >= floor)
+                continue;
+
+            state.LastEchoModificationRoomCount = floor;
+            state.Revision++;
+            CommitState(player, state);
+
+            int goldBefore = player.Gold;
+            Entry.Logger.Info(
+                $"[StatusSlot][EchoModification] settling floor={floor} " +
+                $"player={player.NetId} goldBefore={goldBefore}");
+            await PlayerCmd.GainGold(25m, player);
+            int goldAfter = player.Gold;
+            int goldGained = Math.Max(0, goldAfter - goldBefore);
+            Entry.Logger.Info(
+                $"[StatusSlot][EchoModification] settled floor={floor} " +
+                $"player={player.NetId} goldAfter={goldAfter} gained={goldGained}");
+            if (goldGained <= 0)
+                continue;
+
+            state = GetState(player);
+            Entry.Logger.Info(
+                $"[StatusSlot][EchoModification] floor={floor} " +
+                $"player={player.NetId} roomBonus={goldGained} " +
+                $"goldBaseline={state.EchoModificationGoldOnAcquire}");
+        }
     }
 
     internal static async Task ApplyAberrationActionAsync(
@@ -453,9 +538,14 @@ public static class StatusSlotManager
         StatusSlotPlayerState state = GetState(player);
         if (state.SwarmCallKey == "echo_modification")
         {
-            int goldToRemove = Math.Min(player.Gold, Math.Max(0, state.EchoModificationGoldGained));
+            int goldBaseline = Math.Max(0, state.EchoModificationGoldOnAcquire);
+            int goldToRemove = Math.Max(0, player.Gold - goldBaseline);
             if (goldToRemove > 0)
                 await PlayerCmd.LoseGold(goldToRemove, player, GoldLossType.Spent);
+
+            Entry.Logger.Info(
+                $"[StatusSlot][EchoModification] restored gold baseline player={player.NetId} " +
+                $"baseline={goldBaseline} removed={goldToRemove} currentGold={player.Gold}");
         }
 
         await RemoveEffectAsync(player, StatusSlotType.SwarmCall, choiceContext);
@@ -466,13 +556,6 @@ public static class StatusSlotManager
         RoomType roomType,
         PlayerChoiceContext choiceContext)
     {
-        if (HasEffect(player, StatusSlotType.SwarmCall) &&
-            GetEffectKey(player, StatusSlotType.SwarmCall) == "echo_modification" &&
-            !IsCombatRoom(roomType))
-        {
-            await PlayerCmd.GainGold(25m, player);
-        }
-
         if (HasEffect(player, StatusSlotType.SwarmCall) &&
             GetEffectKey(player, StatusSlotType.SwarmCall) == "echo_wither" &&
             IsCombatRoom(roomType))

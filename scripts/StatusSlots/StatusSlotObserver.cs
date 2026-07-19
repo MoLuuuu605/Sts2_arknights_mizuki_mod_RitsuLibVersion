@@ -1,4 +1,5 @@
 using MegaCrit.Sts2.Core.Map;
+using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Runs;
 using STS2RitsuLib;
 using STS2RitsuLib.RunData;
@@ -32,6 +33,9 @@ public sealed class StatusSlotObserver : ILifecycleObserver
                     break;
                 case RoomEnteredEvent e:
                     OnRoomEntered(e);
+                    break;
+                case ActEnteredEvent e:
+                    OnActEntered(e);
                     break;
                 case RoomExitedEvent e:
                     OnRoomExited(e);
@@ -84,9 +88,32 @@ public sealed class StatusSlotObserver : ILifecycleObserver
 
     private void OnRoomEntered(RoomEnteredEvent evt)
     {
+        Entry.Logger.Info(
+            $"[StatusSlot][RoomEntered] floor={evt.RunState.TotalFloor} " +
+            $"roomStack={evt.RunState.CurrentRoomCount} type={evt.Room.RoomType}");
+        TaskHelper.RunSafely(SettleRoomEnteredAsync(evt));
         StatusSlotFrame.EnsureButtons();
         StatusSlotPatches.HideDataModifierBadge();
         StatusSlotManager.RefreshUI();
+    }
+
+    private static async Task SettleRoomEnteredAsync(RoomEnteredEvent evt)
+    {
+        if (evt.RunState is not RunState runState)
+            return;
+
+        StatusSlotManager.EnsureData(runState);
+        await StatusSlotManager.SettleRoomEnteredAsync(runState, evt.Room);
+        await StatusSlotManager.SettleEchoModificationRoomEnteredAsync(runState, evt.Room);
+    }
+
+    private static void OnActEntered(ActEnteredEvent evt)
+    {
+        if (evt.RunState is not RunState runState)
+            return;
+
+        StatusSlotManager.EnsureData(runState);
+        TaskHelper.RunSafely(StatusSlotManager.SettleActEnteredAsync(runState, evt.CurrentActIndex));
     }
 
     private void OnRoomExited(RoomExitedEvent evt)
